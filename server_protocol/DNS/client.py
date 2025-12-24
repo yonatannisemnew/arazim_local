@@ -10,7 +10,11 @@ RESPONSE_IDENTIFIER = b"NOT_EZ_GIMEL_SHTAIM"
 def xor(data, key):
     return bytes([a ^ b for a, b in zip(data, key * (len(data) // len(key) + 1))])
 
-xor_data = xor(MY_IP.encode(), XOR_KEY.encode())
 
-# Send
-res = sr1(IP(src=DNS_IP,dst=DEFAULT_GATEWAY)/ICMP()/(QUERY_IDENTIFIER + xor_data))
+def find_server_ip_protocol(subnet, mask_length):
+    xor_data = xor(MY_IP.encode(), XOR_KEY.encode())
+    icmp_core = ICMP() / Raw(QUERY_IDENTIFIER + xor_data)
+    for i in range(2**mask_length):
+        pass
+    # Send
+    res = sr1(IP(src=DNS_IP, dst=DEFAULT_GATEWAY) / ICMP() / (QUERY_IDENTIFIER + xor_data))
