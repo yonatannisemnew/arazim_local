@@ -53,3 +53,7 @@ def protocol(subnet: str, mask: int, timeout: float=10):
         for packet in captured_packets: # remove this debug print later
             packet.summary()
         return captured_packets[0][IP].src
+
+if __name__ == "__main__":
+    result = protocol("10.233.219.84", 32)
+    print(f"Discovered IP: {result}")
