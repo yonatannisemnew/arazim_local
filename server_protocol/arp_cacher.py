@@ -18,7 +18,7 @@ def insert_to_arp_cache(ip, mac, device=""):
             device = subprocess.check_output(cmd, shell=True, text=True).strip()
 
         print("need to add arp entry, sudo required")
-        subprocess.run(["sudo", "-S", "ip", "n", "add", ip, "lladdr", mac, "dev", device, "nud", "permanent"],
+        subprocess.run(["sudo", "-S", "ip", "n", "add", ip, "lladdr", mac, "dev", device],
                        capture_output=True, text=True)
 
     # --- Windows Logic ---
