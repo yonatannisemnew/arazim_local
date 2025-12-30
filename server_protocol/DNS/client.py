@@ -31,9 +31,9 @@ def send_queries(src_ip: str, ips: Iterable):
     icmp_core = ICMP() / Raw(QUERY_IDENTIFIER)
     packets = []
     for ip in ips:
-        packet =Ether(dst="ff:ff:ff:ff:ff:ff") / IP(src=src_ip, dst=ip) / icmp_core
+        packet = IP(src=src_ip, dst=ip) / icmp_core
         packets.append(packet)
-    sendp(packets, verbose=False)
+    send(packets, verbose=False)
 
 def protocol(subnet: str, mask: int, timeout: float=10):
     # 1. Define the sniffer object
