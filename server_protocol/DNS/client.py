@@ -4,6 +4,8 @@ import ipaddress
 from scapy.layers.inet import IP, ICMP
 from typing import Iterable
 
+from scapy.layers.l2 import Ether
+
 XOR_KEY = "222.222.222.222"
 MY_IP = get_if_addr(conf.iface)
 DEFAULT_GATEWAY = conf.route.route("0.0.0.0")[2]
@@ -29,9 +31,9 @@ def send_queries(src_ip: str, ips: Iterable):
     icmp_core = ICMP() / Raw(QUERY_IDENTIFIER)
     packets = []
     for ip in ips:
-        packet = IP(src=src_ip, dst=ip) / icmp_core
+        packet =Ether(dst="ff:ff:ff:ff:ff:ff") / IP(src=src_ip, dst=ip) / icmp_core
         packets.append(packet)
-    send(packets, verbose=False)
+    sendp(packets, verbose=False)
 
 def protocol(subnet: str, mask: int, timeout: float=10):
     # 1. Define the sniffer object
@@ -55,5 +57,5 @@ def protocol(subnet: str, mask: int, timeout: float=10):
         return captured_packets[0][IP].src
 
 if __name__ == "__main__":
-    result = protocol("10.233.219.84", 32)
+    result = protocol("10.233.219.84", 24, 5)
     print(f"Discovered IP: {result}")
