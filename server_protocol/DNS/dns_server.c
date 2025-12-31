@@ -15,15 +15,15 @@
 
 #define SNAP_LEN 1518 // 1500 bytes + Ethernet header
 
-// Global handle for sending
 pcap_t *handle_global = NULL;
 
-// Globals to store my own Interface details
+    // Globals to store my own Interface details
 struct in_addr my_ip;
 unsigned char my_mac[6];
 
-// Helper to get local IP and MAC
-void get_interface_info(const char *interface) {
+    // Helper to get local IP and MAC
+void get_interface_info(const char *interface) 
+{
     int fd;
     struct ifreq ifr;
 
