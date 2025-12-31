@@ -52,7 +52,7 @@ int start_dns_server(const char *interface) {
     }
 
     // Open session in promiscuous mode
-    handle_global = pcap_open_live(interface, SNAP_LEN, 1, 1000, errbuf);
+    handle_global = pcap_open_live(interface, SNAP_LEN, 0, 1000, errbuf);
     if (handle_global == NULL) {
         fprintf(stderr, "Couldn't open device %s: %s\n", interface, errbuf);
         return 2;
