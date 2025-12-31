@@ -41,8 +41,11 @@ def in_g2_logic(
 
 def not_in_g2_logic(process):
     if process is not None:
-        process.kill()
-        time.sleep(0.5)  # give some time to terminate
+        process.terminate()
+        try:
+            process.wait(timeout=3)
+        except:
+            process.kill()  # give some time to terminate
     return None
 
 
@@ -58,15 +61,16 @@ def main(binary_path, args, t):
             time.sleep(t)
         except KeyboardInterrupt:
             print("Execution interrupted by user.")
+            if process:
+                process.kill()
+            break
         except Exception as ex:
             print(f"An error occurred: {ex}")
 
 
 if __name__ == "__main__":
-    binary_path = (
-        "C:\\Windows\\System32\\notepad.exe"  # replace with actual binary path
-    )
+    binary_path = "python"  # replace with actual binary path
     # process = Popen([binary_path])
-    args = []  # replace with actual arguments if needed
+    args = ["snippets\\manager\\test.py"]  # replace with actual arguments if needed
     t = 2  # time interval in seconds
     main(binary_path, args, t)

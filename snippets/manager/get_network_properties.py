@@ -77,6 +77,15 @@ def get_subnet_mask(router_ip):
 
 
 def get_network_properties():
+    ip = get_if_addr(conf.iface)
+    if ip == "0.0.0.0" or ip == "127.0.0.1":
+        return {
+            "network_name": "Not connected to any network",
+            "my_ip": None,
+            "router_ip": None,
+            "default_device": None,
+            "subnet_mask": None,
+        }
     network_name = get_current_network_name()
     my_ip, router_ip, default_device = get_ip_and_def_device()
     subnet_mask = get_subnet_mask(router_ip)
