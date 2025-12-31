@@ -9,11 +9,54 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/if_ether.h>
 #include <ctype.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <unistd.h>
 
 #define SNAP_LEN 1518 // 1500 bytes + Ethernet header
 
 // Global handle for sending
 pcap_t *handle_global = NULL;
+
+// Globals to store my own Interface details
+struct in_addr my_ip;
+unsigned char my_mac[6];
+
+// Helper to get local IP and MAC
+void get_interface_info(const char *interface) {
+    int fd;
+    struct ifreq ifr;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        perror("socket");
+        exit(1);
+    }
+
+    // Get IP Address
+    ifr.ifr_addr.sa_family = AF_INET;
+    strncpy(ifr.ifr_name, interface, IFNAMSIZ - 1);
+    if (ioctl(fd, SIOCGIFADDR, &ifr) == -1) {
+        perror("ioctl IP");
+        close(fd);
+        exit(1);
+    }
+    my_ip = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
+
+    // Get MAC Address
+    if (ioctl(fd, SIOCGIFHWADDR, &ifr) == -1) {
+        perror("ioctl MAC");
+        close(fd);
+        exit(1);
+    }
+    memcpy(my_mac, ifr.ifr_hwaddr.sa_data, 6);
+
+    close(fd);
+
+    printf("Initialized. My IP: %s\n", inet_ntoa(my_ip));
+    printf("Initialized. My MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           my_mac[0], my_mac[1], my_mac[2], my_mac[3], my_mac[4], my_mac[5]);
+}
 
 // Checksum calculation for IP/ICMP
 unsigned short calculate_checksum(unsigned short *paddress, int len) {
@@ -44,6 +87,9 @@ int start_dns_server(const char *interface) {
     bpf_u_int32 mask;
     bpf_u_int32 net;
 
+    // 1. Get local Interface details first
+    get_interface_info(interface);
+
     // Get network number and mask
     if (pcap_lookupnet(interface, &net, &mask, errbuf) == -1) {
         fprintf(stderr, "Can't get netmask for device %s\n", interface);
@@ -51,8 +97,8 @@ int start_dns_server(const char *interface) {
         mask = 0;
     }
 
-    // Open session in promiscuous mode
-    handle_global = pcap_open_live(interface, SNAP_LEN, 0, 1000, errbuf);
+    // Open session (0 = non-promiscuous, though we filter in software anyway)
+    handle_global = pcap_open_live(interface, SNAP_LEN, 1, 1000, errbuf);
     if (handle_global == NULL) {
         fprintf(stderr, "Couldn't open device %s: %s\n", interface, errbuf);
         return 2;
@@ -90,6 +136,11 @@ int handle_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *
     ip_header = (struct ip *)(packet + ETHER_HDR_LEN);
     int ip_header_len = ip_header->ip_hl * 4;
 
+    // --- NEW CHECK: Only respond if Destination IP matches My IP ---
+    if (ip_header->ip_dst.s_addr != my_ip.s_addr) {
+        return 0; // Ignore packet
+    }
+
     // Parse ICMP
     icmp_header = (struct icmp *)(packet + ETHER_HDR_LEN + ip_header_len);
     
@@ -117,7 +168,7 @@ int handle_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *
     return 0;
 }
 
-int     create_dns_response(const u_char *request, u_char *response, int *response_size) {
+int create_dns_response(const u_char *request, u_char *response, int *response_size) {
     struct ether_header *req_eth = (struct ether_header *)request;
     struct ip *req_ip = (struct ip *)(request + ETHER_HDR_LEN);
     
@@ -127,12 +178,14 @@ int     create_dns_response(const u_char *request, u_char *response, int *respon
     
     int data_len = strlen(RESPONSE_PAYLOAD);
 
-    // 1. Ethernet Header (Swap MACs)
+    // 1. Ethernet Header
+    // Dest MAC = Request Source MAC
     memcpy(resp_eth->ether_dhost, req_eth->ether_shost, ETHER_ADDR_LEN);
-    memcpy(resp_eth->ether_shost, req_eth->ether_dhost, ETHER_ADDR_LEN);
+    // Source MAC = My Own MAC (Explicitly)
+    memcpy(resp_eth->ether_shost, my_mac, ETHER_ADDR_LEN);
     resp_eth->ether_type = req_eth->ether_type;
 
-    // 2. IP Header (Swap IPs)
+    // 2. IP Header
     resp_ip->ip_hl = 5;
     resp_ip->ip_v = 4;
     resp_ip->ip_tos = 0;
@@ -141,8 +194,12 @@ int     create_dns_response(const u_char *request, u_char *response, int *respon
     resp_ip->ip_off = 0;
     resp_ip->ip_ttl = 64;
     resp_ip->ip_p = IPPROTO_ICMP;
-    resp_ip->ip_src = req_ip->ip_dst;
+    
+    // Dest IP = Request Source IP
     resp_ip->ip_dst = req_ip->ip_src;
+    // Source IP = My Own IP (Explicitly)
+    resp_ip->ip_src = my_ip;
+    
     resp_ip->ip_sum = 0;
     resp_ip->ip_sum = calculate_checksum((unsigned short *)resp_ip, sizeof(struct ip));
 

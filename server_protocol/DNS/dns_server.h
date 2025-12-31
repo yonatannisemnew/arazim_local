@@ -11,6 +11,15 @@
 typedef unsigned char u_char;
 
 /**
+ * @brief Retrieves the IP and MAC address of the specified network interface.
+ * 
+ *  This function uses ioctl calls to fetch the interface details and
+ *  stores them in global variables for later use.
+ *  @param interface The name of the network interface (e.g., "eth0", "wlan0").
+ *  
+ */
+void get_interface_info(const char *interface) ;
+/**
  * @brief Starts the packet sniffing server on the specified network interface.
  *
  * This function initializes the pcap session, compiles the BPF filter for ICMP,
