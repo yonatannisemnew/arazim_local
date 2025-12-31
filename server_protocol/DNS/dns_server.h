@@ -6,7 +6,7 @@
 
 #define PAYLOAD "nif_local_salta_8223"
 
-#define RESPONSE_PAYLOAD "HELLO I AM HERE!"
+#define RESPONSE_PAYLOAD "NOT_EZ_GIMEL_SHTAIM"
 
 typedef unsigned char u_char;
 
