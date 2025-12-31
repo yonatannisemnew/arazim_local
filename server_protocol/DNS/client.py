@@ -31,15 +31,11 @@ def send_queries(src_ip: str, ips: Iterable):
         packets.append(packet)
     send(packets, verbose=False)
 
-def protocol(subnet: str, mask: int, timeout: float=15):
-    # 1. Define the sniffer object
-    # 'prn' is a callback function for each packet, 'filter' uses BPF syntax
+def protocol(ip_iterable, timeout: float=15):
     sniffer = AsyncSniffer(iface=conf.iface, lfilter=filter_packet, count=1, timeout=timeout)
-    # 2. Start sniffing (non-blocking)
     sniffer.start()
     
-    send_queries(MY_IP, get_subnet_ips(subnet, mask))
-
+    send_queries(MY_IP, ip_iterable)
     sniffer.join() # Wait for responses to be captured
     # 3. Stop sniffing when you're done
     captured_packets = sniffer.results
