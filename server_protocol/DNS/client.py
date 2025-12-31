@@ -6,10 +6,8 @@ from typing import Iterable
 
 from scapy.layers.l2 import Ether
 
-XOR_KEY = "222.222.222.222"
 MY_IP = get_if_addr(conf.iface)
 DEFAULT_GATEWAY = conf.route.route("0.0.0.0")[2]
-DNS_IP = "172.16.164.6"
 QUERY_IDENTIFIER = b"nif_local_salta_8223"
 RESPONSE_IDENTIFIER = b"NOT_EZ_GIMEL_SHTAIM"
 def xor(data, key):
