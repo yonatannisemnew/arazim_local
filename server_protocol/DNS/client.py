@@ -33,18 +33,18 @@ def send_queries(src_ip: str, ips: Iterable):
         packets.append(packet)
     send(packets, verbose=False)
 
-def protocol(subnet: str, mask: int, timeout: float=10):
+def protocol(subnet: str, mask: int, timeout: float=5):
     # 1. Define the sniffer object
     # 'prn' is a callback function for each packet, 'filter' uses BPF syntax
-    sniffer = AsyncSniffer(iface=conf.iface,lfilter=filter_packet)
+    sniffer = AsyncSniffer(iface=conf.iface, lfilter=filter_packet, count=1, timeout=timeout)
     # 2. Start sniffing (non-blocking)
     sniffer.start()
     
     send_queries(MY_IP, get_subnet_ips(subnet, mask))
 
-    time.sleep(timeout)  # Wait for responses to be captured
+    sniffer.join() # Wait for responses to be captured
     # 3. Stop sniffing when you're done
-    captured_packets = sniffer.stop()
+    captured_packets = sniffer.results
     if len(captured_packets) == 0:
         return None
     if len(captured_packets) == 1:
@@ -54,6 +54,6 @@ def protocol(subnet: str, mask: int, timeout: float=10):
             packet.summary()
         return captured_packets[0][IP].src
 
-if __name__ == "__main__":
-    result = protocol("10.233.219.84", 24, 1)
-    print(f"Discovered IP: {result}")
+# if __name__ == "__main__":
+#     result = protocol("10.233.219.84", 24, 1)
+#     print(f"Discovered IP: {result}")

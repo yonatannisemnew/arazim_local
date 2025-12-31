@@ -28,6 +28,6 @@ def insert_to_hosts(domain: str, ip: str):
     replace_domain_ip(domain, ip, find_path())
 
 
-if __name__ == '__main__':
-    insert_to_hosts("arazimloc.com", "146.190.62.39")
+# if __name__ == '__main__':
+#     insert_to_hosts("arazimloc.com", "146.190.62.39")
 
