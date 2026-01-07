@@ -1,10 +1,10 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
-from printing import add_printing_job
-
+from printer_scheduler import add_printing_job
 app = Flask(__name__)
 
+app.secret_key = 'supersecretkey'  # Needed for flashing messages
 # Configure upload folder and allowed extensions
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -34,11 +34,12 @@ def index():
         # 3. Check if file is actually a PDF
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(full_path)
             
             # Success!
             flash(f'Success! PDF uploaded for {date_time}', 'success')
-            add_printing_job(filename, date_time)
+            add_printing_job(full_path, date_time) # TODO: change the filename to the full path
             return redirect(request.url)
         else:
             flash('Error: Only PDF files are allowed.', 'error')
