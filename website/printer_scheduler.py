@@ -1,11 +1,14 @@
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
-SEND_ADDR = "WE NEED TO CREATE AN EMAIL FOR THIS!!!" # TODO: create email
-SEND_PASS = "EMAIL PASSWORD HERE"  # TODO: email password
-RECV_ADDR = "RECEIVER EMAIL HERE"  # TODO: receiver email
+load_dotenv()
 
-PRINT_PATH = "/path/to/website/printing_script.py"  # TODO: set correct path to printing_script.py
+SEND_ADDR = os.getenv("SEND_ADDR", "WE NEED TO CREATE AN EMAIL FOR THIS!!!") # TODO: create email
+SEND_PASS = os.getenv("SEND_PASS", "EMAIL PASSWORD HERE")  # TODO: email password
+RECV_ADDR = os.getenv("RECV_ADDR", "RECEIVER EMAIL HERE")  # TODO: receiver email
+
+PRINT_PATH = os.getenv("PRINT_PATH", "/path/to/website/printing_script.py")  # TODO: set correct path to printing_script.py
 
 def add_printing_job(filename, time):
     cron = CronTab(user=True)
