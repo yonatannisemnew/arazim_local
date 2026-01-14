@@ -64,7 +64,7 @@ def main():
     parser.add_argument("--lo_iface", dest="lo_iface", required=True,
                         help="Network interface to send on (loopback)")
     args = parser.parse_args()
-    sniffer = OutSniffer(args.our_ip, args.default_gateway, args.send_fiface, args.lo_iface)
+    sniffer = OutSniffer(args.our_ip, args.default_gateway, args.send_iface, args.lo_iface)
     sniffer.start_sniff()
 
 
