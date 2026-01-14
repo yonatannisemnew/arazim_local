@@ -12,17 +12,17 @@ def real_ip_to_local(ip):
     return "127" + ip[ind:]
 
 class Sniffer:
-    def __init__(self,our_ip,tunnel_dst_ip,sniffiface,sendiface):
+    def __init__(self, our_ip, default_gateway, sniff_iface, lo_iface):
         self.our_ip = our_ip
-        self.tunnel_dst_ip = tunnel_dst_ip
-        self.sniffiface = sniffiface
-        self.sendiface = sendiface
+        self.default_gateway = default_gateway
+        self.sniff_iface = sniff_iface
+        self.lo_iface = lo_iface
         self.bpf_filter = (f"dst host {our_ip} "
-                  f"and src host {tunnel_dst_ip} "
+                  f"and src host {default_gateway} "
                   "and icmp")
     
     def start_sniff(self):
-        sniff(filter=self.bpf_filter, iface=self.sniffiface, prn=self.decapsulate_and_inject, store=0)
+        sniff(filter=self.bpf_filter, iface=self.sniff_iface, prn=self.decapsulate_and_inject, store=0)
 
     def decapsulate_and_inject(self,pkt):
         """
@@ -37,11 +37,11 @@ class Sniffer:
             encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
             #change src and dst to allow sending in lo
             encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
-            encapsulated[IP].dst = "127.0.0.1"
+            encapsulated[IP].dst = real_ip_to_local(encapsulated[IP].dst)
             #delete checksums to force recalculation, and send :-)
             del encapsulated[IP].chksum
             del encapsulated[TCP].chksum
-            send(encapsulated, verbose=0, iface=self.sendiface)
+            send(encapsulated, verbose=0, iface=self.lo_iface)
 
         except Exception as e:
             pass
@@ -52,7 +52,7 @@ def main():
                         help="our IP address to filter")
     parser.add_argument("--tunnel-dst-ip", dest="tunnel_dst_ip", required=True,
                         help="Expected source of captured packets")
-    parser.add_argument("--sniffiface", dest="sniffiface", required=True,
+    parser.add_argument("--sniff_iface", dest="sniff_iface", required=True,
                         help="Network interface to sniff on")
     parser.add_argument("--sendiface", dest="sendiface", required=True,
                         help="Network interface to send on (loopback)")
