@@ -1,18 +1,17 @@
 from scapy.all import sniff, send, Raw
 import sys
-
+from constants import PAYLOAD_MAGIC
 from scapy.layers.inet import IP, TCP
-
-TARGET_SUBNET = "172.16.164.0/23"
+TARGET_SUBNET_remove = "172.16.164.0/23"
 
 # router
-TUNNEL_DEST_IP = "172.16.164.254"
-MY_IP = "172.16.164.94"
+TUNNEL_DEST_IP_remove = "172.16.164.254"
+MY_IP_remove = "172.16.164.94"
 
 
 
 # wifi interface
-IFACE = "wlp8s0"
+IFACE_remove = "wlp8s0"
 
 def real_ip_to_local(ip):
     ind = ip.find(".")
@@ -23,13 +22,13 @@ def real_ip_to_local(ip):
 def encapsulate_and_send(pkt):
     """
     Takes the WHOLE packet (headers + data), converts to bytes,
-    and puts it inside an ICMP Echo Request.
+    and puts it inside an ICMP Echo Request, with a magic
     """
     try:
-        if pkt[Raw].load[:len("sacha")] != b"sacha":
+        if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
             return
-            
-        real_packet = IP(pkt[Raw].load[len("sacha"):])
+
+        real_packet = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
         real_packet[IP].src = real_ip_to_local(real_packet[IP].src)
         real_packet[IP].dst = "127.0.0.1"
         real_packet.show()
