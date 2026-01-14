@@ -29,7 +29,6 @@ class Sniffer:
         Takes an ICMP echo packet, checks that the magic is there,
         and injects the "raw" part into loopback.
         """
-        global sendiface
         try:
             #make sure its our magic
             if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
