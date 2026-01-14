@@ -4,8 +4,8 @@ import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
 from constants import PAYLOAD_MAGIC #because manager calls it, the relative import works
-
-
+#default, will change with user args
+sendiface = "lo"
 def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
@@ -17,6 +17,7 @@ def decapsulate_and_inject(pkt):
     Takes an ICMP echo packet, checks that the magic is there,
     and injects the "raw" part into loopback.
     """
+    global sendiface
     try:
         #make sure its our magic
         if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
@@ -29,7 +30,7 @@ def decapsulate_and_inject(pkt):
         #delete checksums to force recalculation, and send :-)
         del encapsulated[IP].chksum
         del encapsulated[TCP].chksum
-        send(encapsulated, verbose=0, iface="lo")
+        send(encapsulated, verbose=0, iface=sendiface)
 
     except Exception as e:
         pass
@@ -40,19 +41,22 @@ def main():
                         help="our IP address to filter")
     parser.add_argument("--tunnel-dst-ip", dest="tunnel_dst_ip", required=True,
                         help="Expected source of captured packets")
-    parser.add_argument("--netiface", dest="netiface", required=True,
+    parser.add_argument("--sniffiface", dest="sniffiface", required=True,
                         help="Network interface to sniff on")
-
+    parser.add_argument("--sendiface", dest="sendiface", required=True,
+                        help="Network interface to send on (loopback)")
     args = parser.parse_args()
     our_ip = args.our_ip
     tunnel_dst_ip = args.tunnel_dst_ip
-    netiface = args.netiface
+    sniffiface = args.sniffiface
+    global sendiface
+    sendiface = args.sendiface
 
     bpf_filter = (f"dst host {our_ip} "
                   f"and src host {tunnel_dst_ip} "
                   "and icmp")
-    
-    sniff(filter=bpf_filter, iface=netiface, prn=decapsulate_and_inject, store=0)
+
+    sniff(filter=bpf_filter, iface=sniffiface, prn=decapsulate_and_inject, store=0)
 
 
 if __name__ == "__main__":
