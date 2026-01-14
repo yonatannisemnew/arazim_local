@@ -57,8 +57,8 @@ class OutSniffer:
 def main(target_subnet, my_ip, network_interface, lo_interface, default_gateway):
     print(f"[*] Starting Sniffer...")
     print(f"[*] Targeting Subnet: {target_subnet}")
-    sniffer = OutSniffer(target_subnet, my_ip, network_interface)
-    bpf_filter = (f"dst net {target_subnet} and not dst host {default_gateway} and src net 127.16.164.0/23 and tcp")
+    sniffer = OutSniffer(target_subnet, my_ip, network_interface, default_gateway)
+    bpf_filter = (f"dst net 127.16.164.0/23 and tcp")
     sniff(filter=bpf_filter, iface=lo_interface, prn=sniffer.encapsulate_and_send, store=0)
 
 
