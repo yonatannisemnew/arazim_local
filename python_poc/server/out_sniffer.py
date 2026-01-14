@@ -8,7 +8,7 @@ from scapy.layers.inet import IP, TCP, ICMP
 from python_poc.server.sniff_constants import PAYLOAD_MAGIC
 
 
-class out_sniffer:
+class OutSniffer:
 
     def __init__(self, target_subnet, destination_ip, my_ip, network_interface):
         self.target_subnet = target_subnet
@@ -56,18 +56,18 @@ class out_sniffer:
         except Exception as e:
             print(f"[!] Error processing packet: {e}")
 
-def main(TUNNEL_DEST_IP, TARGET_SUBNET, my_ip, network_interface):
+def main(TUNNEL_DEST_IP, TARGET_SUBNET, my_ip, network_interface, lo_interface):
     print(f"[*] Starting Sniffer...")
     print(f"[*] Targeting Subnet: {TARGET_SUBNET}")
     print(f"[*] Tunneling to: {TUNNEL_DEST_IP}")
-
+    sniffer = OutSniffer(TARGET_SUBNET, TUNNEL_DEST_IP, my_ip, network_interface)
     bpf_filter = (f"dst host 127.16.164.165 "
                   f"and src host 127.0.0.1 "
                   f"and tcp")
-    sniff(filter=bpf_filter, iface="lo", prn=encapsulate_and_send, store=0)
+    sniff(filter=bpf_filter, iface=lo_interface, prn=sniffer.encapsulate_and_send, store=0)
 
 
 if __name__ == "__main__":
     if os.geteuid() != 0:
         sys.exit("Please run as root/sudo.")
-    main()
+    # main()
