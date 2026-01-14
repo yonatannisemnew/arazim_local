@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 
+from mpmath.libmp import ifac
 from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 
@@ -28,7 +29,7 @@ class OutSniffer:
         self.network_interface = network_interface
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
-        self.bpf_filter = f"dst net {real_ip_to_local(target_subnet)} and tcp"
+        self.bpf_filter = f"dst net {real_ip_to_local(target_subnet)}"
     
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
