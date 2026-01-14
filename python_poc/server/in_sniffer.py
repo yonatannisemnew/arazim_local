@@ -3,7 +3,7 @@ import os
 import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
-from constants import PAYLOAD_MAGIC #because manager calls it, the relative import works
+from sniff_constants import PAYLOAD_MAGIC 
 #default, will change with user args
 sendiface = "lo"
 def real_ip_to_local(ip):

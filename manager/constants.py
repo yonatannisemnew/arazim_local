@@ -34,4 +34,3 @@ PID_KEY = "PID"
 START_TIME_KEY = "start_time"
 
 
-PAYLOAD_MAGIC = b"sxsvn"
