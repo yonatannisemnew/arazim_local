@@ -44,11 +44,15 @@
 
         <div class="form-group">
             <label for="document">Upload PDF:</label>
+            <p>Please use <b>Only</b> English in the file name</p>
             <input type="file" id="document" name="document" accept=".pdf" required>
         </div>
 
         <button type="submit">Send</button>
     </form>
+    <div style="margin-top:12px; text-align:center;">
+        <a href="{{ url_for('list_previews') }}">View previews</a>
+    </div>
 </div>
 
 </body>

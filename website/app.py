@@ -3,7 +3,7 @@ import json
 import hashlib
 import uuid
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from printer_scheduler import schedule_task
@@ -28,10 +28,11 @@ TASK_FIELDS = [
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['TASKS_FOLDER'] = TASKS_FOLDER
-
+app.config['PREVIEW_FOLDER'] = PREVIEW_FOLDER
 # folder creation if not exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(TASKS_FOLDER, exist_ok=True)
+os.makedirs(PREVIEW_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """ check if the file has an allowed extension"""
@@ -87,6 +88,35 @@ def show_add_file_form():
     """ only show the form to upload a file and set a print time"""
     return render_template('index.html')
 
+
+@app.route('/previews', methods=['GET'])
+def list_previews():
+    """Show a page that lists preview files with view/download links."""
+    folder = app.config.get('PREVIEW_FOLDER', 'previews')
+    try:
+        files = sorted(os.listdir(folder))
+    except FileNotFoundError:
+        files = []
+    return render_template('previews.html', files=files)
+
+
+@app.route('/previews/view/<path:filename>', methods=['GET'])
+def view_preview(filename):
+    folder = app.config.get('PREVIEW_FOLDER', 'previews')
+    try:
+        return send_from_directory(folder, filename, as_attachment=False)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route('/previews/download/<path:filename>', methods=['GET'])
+def download_preview(filename):
+    folder = app.config.get('PREVIEW_FOLDER', 'previews')
+    try:
+        return send_from_directory(folder, filename, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+
 @app.route('/add_file', methods=['POST'])
 def handle_file_upload():
     """Process the form: save file and create a task JSON"""
@@ -103,10 +133,15 @@ def handle_file_upload():
         file_hash = calculate_file_hash(file)
         new_filename = f"{file_hash}." + secure_filename(file.filename).rsplit('.', 1)[1].lower()
         full_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+        preview_path = os.path.join(app.config['PREVIEW_FOLDER'], secure_filename(file.filename))
         
         # 2. file saving (only if it doesn't already exist, saves space)
         if not os.path.exists(full_path):
             file.save(full_path)
+            file.seek(0)  # Reset file pointer for preview generation if needed
+
+        if not os.path.exists(preview_path):
+            file.save(preview_path)  # Save a copy for preview purposes
         
         # 3. create the JSON file in the tasks folder
         create_task_json(full_path, secure_filename(file.filename), fields)
@@ -115,11 +150,12 @@ def handle_file_upload():
         appointment_datetime = datetime.strptime(fields["appointment_time"], "%Y-%m-%dT%H:%M")
         schedule_task(appointment_datetime, os.path.join(os.getcwd(), 'printing_script.py'), full_path)
         
-        flash(f'Success! Task created for {fields["appointment_time"]}. File saved as {new_filename}', 'success')
+        flash(f'Success! Task created for {fields["appointment_time"]}. File saved as {secure_filename(file.filename)}', 'success')
         return redirect(url_for('show_add_file_form'))
     else:
         flash('Error: Invalid file extension.', 'error')
         return redirect(url_for('show_add_file_form'))
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
