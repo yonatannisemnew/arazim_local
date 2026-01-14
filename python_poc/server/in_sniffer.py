@@ -4,36 +4,48 @@ import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
 from sniff_constants import PAYLOAD_MAGIC 
-#default, will change with user args
-sendiface = "lo"
+
 def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
         raise ValueError("Invalid IP")
     return "127" + ip[ind:]
 
-def decapsulate_and_inject(pkt):
-    """
-    Takes an ICMP echo packet, checks that the magic is there,
-    and injects the "raw" part into loopback.
-    """
-    global sendiface
-    try:
-        #make sure its our magic
-        if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
-            return
-        #get the raw, without magic (og packet)
-        encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
-        #change src and dst to allow sending in lo
-        encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
-        encapsulated[IP].dst = "127.0.0.1"
-        #delete checksums to force recalculation, and send :-)
-        del encapsulated[IP].chksum
-        del encapsulated[TCP].chksum
-        send(encapsulated, verbose=0, iface=sendiface)
+class Sniffer:
+    def __init__(self,our_ip,tunnel_dst_ip,sniffiface,sendiface):
+        self.our_ip = our_ip
+        self.tunnel_dst_ip = tunnel_dst_ip
+        self.sniffiface = sniffiface
+        self.sendiface = sendiface
+        self.bpf_filter = (f"dst host {our_ip} "
+                  f"and src host {tunnel_dst_ip} "
+                  "and icmp")
+    
+    def start_sniff(self):
+        sniff(filter=self.bpf_filter, iface=self.sniffiface, prn=self.decapsulate_and_inject, store=0)
 
-    except Exception as e:
-        pass
+    def decapsulate_and_inject(self,pkt):
+        """
+        Takes an ICMP echo packet, checks that the magic is there,
+        and injects the "raw" part into loopback.
+        """
+        global sendiface
+        try:
+            #make sure its our magic
+            if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
+                return
+            #get the raw, without magic (og packet)
+            encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
+            #change src and dst to allow sending in lo
+            encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
+            encapsulated[IP].dst = "127.0.0.1"
+            #delete checksums to force recalculation, and send :-)
+            del encapsulated[IP].chksum
+            del encapsulated[TCP].chksum
+            send(encapsulated, verbose=0, iface=self.sendiface)
+
+        except Exception as e:
+            pass
 
 def main():
     parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
@@ -46,19 +58,9 @@ def main():
     parser.add_argument("--sendiface", dest="sendiface", required=True,
                         help="Network interface to send on (loopback)")
     args = parser.parse_args()
-    our_ip = args.our_ip
-    tunnel_dst_ip = args.tunnel_dst_ip
-    sniffiface = args.sniffiface
-    global sendiface
-    sendiface = args.sendiface
-
-    bpf_filter = (f"dst host {our_ip} "
-                  f"and src host {tunnel_dst_ip} "
-                  "and icmp")
-
-    sniff(filter=bpf_filter, iface=sniffiface, prn=decapsulate_and_inject, store=0)
-
-
+    in_sniffer = Sniffer(args.our_ip, args.tunnel_dst_ip, args.sniffiface, args.sendiface)
+    in_sniffer.start_sniff()
+    
 if __name__ == "__main__":
     if os.geteuid() != 0:
         sys.exit("Please run as root/sudo.")
