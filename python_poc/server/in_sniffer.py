@@ -50,11 +50,11 @@ def main():
     parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
     parser.add_argument("--our-ip", dest="our_ip", required=True,
                         help="our IP address to filter")
-    parser.add_argument("--tunnel-dst-ip", dest="tunnel_dst_ip", required=True,
+    parser.add_argument("--default_gateway", dest="default_gateway", required=True,
                         help="Expected source of captured packets")
     parser.add_argument("--sniff_iface", dest="sniff_iface", required=True,
                         help="Network interface to sniff on")
-    parser.add_argument("--sendiface", dest="sendiface", required=True,
+    parser.add_argument("--lo_iface", dest="lo_iface", required=True,
                         help="Network interface to send on (loopback)")
     args = parser.parse_args()
     in_sniffer = Sniffer(args.our_ip, args.tunnel_dst_ip, args.sniffiface, args.sendiface)
