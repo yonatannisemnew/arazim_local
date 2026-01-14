@@ -9,13 +9,13 @@ from in_sniffer import real_ip_to_local
 from sniff_constants import PAYLOAD_MAGIC
 
 
-def local_ip_to_real(self, ip):
+def local_ip_to_real(ip, my_ip):
     ind = ip.find(".")
     if ind == -1:
         raise ValueError("Invalid IP")
-    return self.my_ip[:self.my_ip.find(".")] + ip[ind:]
+    return my_ip[:my_ip.find(".")] + ip[ind:]
 
-def real_ip_to_local(self, ip):
+def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
         raise ValueError("Invalid IP")
@@ -37,7 +37,7 @@ class OutSniffer:
         try:
             if IP not in pkt:
                 return
-            pkt[IP].dst = local_ip_to_real(pkt[IP].dst)
+            pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             print(f"IP is {pkt[IP].dst}")
             pkt[IP].src = self.my_ip
             #deleting the checksum to force recalculation
