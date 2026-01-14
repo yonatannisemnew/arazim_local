@@ -32,3 +32,6 @@ TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds
 PATH_TO_RUNNING_BINARIES_FILE = "manager/current_running_binaries.json"
 PID_KEY = "PID"
 START_TIME_KEY = "start_time"
+
+
+PAYLOAD_MAGIC = b"sxsvn"
