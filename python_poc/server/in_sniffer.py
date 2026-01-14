@@ -4,13 +4,13 @@ import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
 from sniff_constants import PAYLOAD_MAGIC 
-#default, will change with user args
-sendiface = "lo"
+
 def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
         raise ValueError("Invalid IP")
     return "127" + ip[ind:]
+
 class Sniffer:
     def __init__(self,our_ip,tunnel_dst_ip,sniffiface,sendiface):
         self.our_ip = our_ip
