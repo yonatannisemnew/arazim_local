@@ -104,15 +104,11 @@ def not_in_g2_logic(process):
 
 
 def once_first_connected():
-    print(
-        "Connected to G2 for the first time!"
-    )  # placeholder for actual implementation
+    server = find_server()
 
 
-def once_first_connect():
-    print(
-        "Connecting to G2 for the first time!"
-    )  # placeholder for actual implementation
+def once_first_disconnected():
+    print("Disconnecting from G2 network...")  # placeholder for actual implementation
 
 
 def main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
