@@ -38,15 +38,15 @@ class OutSniffer:
             pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             print(f"IP is {pkt[IP].dst}")
             pkt[IP].src = self.my_ip
-            #deleting the checksum to force recalculation
-            del pkt[IP].chksum
-            del pkt[TCP].chksum
+            # #deleting the checksum to force recalculation
+            # del pkt[IP].chksum
+            # del pkt[TCP].chksum
             #adding into icmp payload, with magic
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
             original_dst = pkt[IP].dst
             tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
-
+            tunnel_pkt.show()
             send(tunnel_pkt, verbose=0, iface=self.network_interface)
 
         except Exception as e:
