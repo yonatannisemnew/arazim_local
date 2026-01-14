@@ -48,7 +48,7 @@ class Sniffer:
 
 def main():
     parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
-    parser.add_argument("--our-ip", dest="our_ip", required=True,
+    parser.add_argument("--our_ip", dest="our_ip", required=True,
                         help="our IP address to filter")
     parser.add_argument("--default_gateway", dest="default_gateway", required=True,
                         help="Expected source of captured packets")
@@ -57,7 +57,7 @@ def main():
     parser.add_argument("--lo_iface", dest="lo_iface", required=True,
                         help="Network interface to send on (loopback)")
     args = parser.parse_args()
-    in_sniffer = Sniffer(args.our_ip, args.tunnel_dst_ip, args.sniffiface, args.sendiface)
+    in_sniffer = Sniffer(args.our_ip, args.default_gateway, args.sniff_iface, args.lo_iface)
     in_sniffer.start_sniff()
     
 if __name__ == "__main__":
