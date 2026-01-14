@@ -1,7 +1,8 @@
-from scapy.all import sniff, send, Raw
 import sys
-from constants import PAYLOAD_MAGIC
+from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
+from sniff_constants import PAYLOAD_MAGIC
+
 TARGET_SUBNET_remove = "172.16.164.0/23"
 
 # router
