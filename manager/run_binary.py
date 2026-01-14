@@ -5,9 +5,7 @@ import time
 from get_network_properties import get_network_properties
 import os
 import json
-
-# constants
-G2_NETWORK_NAME = "Building_G2"
+from constants import *
 
 
 def check_pid(pid, start_time=""):
@@ -31,11 +29,11 @@ def check_running_processes():
     with the current process's PID and time of execution and returns False.
     """
     pid = os.getpid()
-    with open("snippets/manager/current_running_binaries.json", "r") as f:
+    with open(PATH_TO_RUNNING_BINARIES_FILE) as f:
         data = f.read()
     json_data = json.loads(data)
-    running_pids = json_data.get("PID", [])
-    start_times = json_data.get("start_time", [])
+    running_pids = json_data.get(PID_KEY, [])
+    start_times = json_data.get(START_TIME_KEY, [])
 
     if any(
         check_pid(running_pid, start_time)
@@ -43,8 +41,10 @@ def check_running_processes():
     ):
         return True
 
-    with open("snippets/manager/current_running_binaries.json", "w") as f:
-        json.dump({"PID": [pid], "start_time": [psutil.Process(pid).create_time()]}, f)
+    with open(PATH_TO_RUNNING_BINARIES_FILE, "w") as f:
+        json.dump(
+            {PID_KEY: [pid], START_TIME_KEY: [psutil.Process(pid).create_time()]}, f
+        )
     return False
 
 
@@ -103,26 +103,40 @@ def not_in_g2_logic(process):
     return None
 
 
-def main(binary_paths, args, t):
+def once_first_connected():
+    print(
+        "Connected to G2 for the first time!"
+    )  # placeholder for actual implementation
+
+
+def once_first_connect():
+    print(
+        "Connecting to G2 for the first time!"
+    )  # placeholder for actual implementation
+
+
+def main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
     if check_running_processes():
-        print("Required processes are already running. Exiting.")
+        print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
-    processes = [None for _ in binary_paths]
+    processes = [None for _ in binaries_to_execute.keys()]
     while True:
         try:
             network_properties = get_network_properties()
-            if network_properties["network_name"] == G2_NETWORK_NAME:
-                for i, binary_path in enumerate(binary_paths):
-                    processes[i] = in_g2_logic(binary_path, args, processes[i])
+            if network_properties[NETWORK_NAME_KEY] == G2_NETWORK_NAME:
+                i = 0
+                for binary_path, binary_args in binaries_to_execute:
+                    processes[i] = in_g2_logic(binary_path, binary_args, processes[i])
                     print(
                         f"Process {i}: PID {processes[i].pid if processes[i] else 'None'}"
                     )
+                    i += 1
             else:
                 for i, process in enumerate(processes):
                     processes[i] = not_in_g2_logic(process)
             time.sleep(t)
         except KeyboardInterrupt:
-            print("Execution interrupted by user.")
+            print(KEYBOARD_INTERRUPT_MESSAGE)
             for process in processes:
                 if process:
                     process.kill()
@@ -132,8 +146,6 @@ def main(binary_paths, args, t):
 
 
 if __name__ == "__main__":
-    binary_path = "python"  # replace with actual binary path
-    # process = Popen([binary_path])
-    args = ["snippets\\manager\\test.py"]  # replace with actual arguments if needed
-    t = 2  # time interval in seconds
-    main([binary_path, binary_path, binary_path], args, t)
+    binaries_to_execute = BINARIES_TO_EXEC.keys()
+    t = TIME_INTERVAL_BETWEEN_CHECKS
+    main(binaries_to_execute, t)

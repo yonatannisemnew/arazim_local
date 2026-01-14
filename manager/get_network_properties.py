@@ -2,36 +2,38 @@ import subprocess
 import platform
 import psutil
 from scapy.all import *
+from constants import *
+from snippets.DNS.client import MY_IP
 
 
 def get_current_network_name():
     try:
         os_name = platform.system()
 
-        if os_name == "Windows":
+        if os_name == WINDOWS:
             # Query Windows netsh
             output = subprocess.check_output(
                 ["netsh", "wlan", "show", "interfaces"]
-            ).decode("utf-8", errors="ignore")
+            ).decode(DECODE_FORMAT, errors="ignore")
             for line in output.split("\n"):
                 if "SSID" in line and "BSSID" not in line:
                     return line.split(":")[1].strip()
 
-        elif os_name == "Darwin":  # macOS
+        elif os_name == MACOS:  # macOS
             # Query macOS airport utility
             cmd = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I"
             output = subprocess.check_output(cmd, shell=True).decode(
-                "utf-8", errors="ignore"
+                DECODE_FORMAT, errors="ignore"
             )
             for line in output.split("\n"):
                 if " SSID" in line:
                     return line.split(":")[1].strip()
 
-        elif os_name == "Linux":
+        elif os_name == LINUX:
             # Query Linux nmcli
             output = subprocess.check_output(
                 ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"]
-            ).decode("utf-8")
+            ).decode(DECODE_FORMAT, errors="ignore")
             for line in output.split("\n"):
                 if line.startswith("yes"):
                     return line.split(":")[1]
@@ -39,12 +41,12 @@ def get_current_network_name():
     except Exception as ex:
         return f"Error retrieving network name: {ex}"
 
-    return "Network name not found (or not on Wi-Fi)"
+    return NETWORK_NOT_FOUND
 
 
 def get_ip_and_def_device():
     # find default gateway and my ip
-    dst, my_ip, router_ip = conf.route.route("0.0.0.0")
+    dst, my_ip, router_ip = conf.route.route(DEFAULT_GATEWAY)
     if isinstance(router_ip, int):
         router_ip = socket.if_indextoname(router_ip)
 
@@ -73,29 +75,29 @@ def get_subnet_mask(router_ip):
         for addr in addresses:
             if addr.address == local_ip:
                 return addr.netmask
-    return "Subnet mask not found for that interface."
+    return SUBNET_NOT_FOUND
 
 
 def get_network_properties():
     ip = get_if_addr(conf.iface)
-    if ip == "0.0.0.0" or ip == "127.0.0.1":
+    if ip == DEFAULT_GATEWAY or ip == LOOPBACK_IP:
         return {
-            "network_name": "Not connected to any network",
-            "my_ip": None,
-            "router_ip": None,
-            "default_device": None,
-            "subnet_mask": None,
+            NETWORK_NAME_KEY: NOT_CONNECTED_MESSAGE,
+            MY_IP_KEY: None,
+            ROUTER_IP_KEY: None,
+            DEFAULT_DEVICE_KEY: None,
+            SUBNET_MASK_KEY: None,
         }
     network_name = get_current_network_name()
     my_ip, router_ip, default_device = get_ip_and_def_device()
     subnet_mask = get_subnet_mask(router_ip)
 
     return {
-        "network_name": network_name,
-        "my_ip": my_ip,
-        "router_ip": router_ip,
-        "default_device": default_device,
-        "subnet_mask": subnet_mask,
+        NETWORK_NAME_KEY: network_name,
+        MY_IP_KEY: my_ip,
+        ROUTER_IP_KEY: router_ip,
+        DEFAULT_DEVICE_KEY: default_device,
+        SUBNET_MASK_KEY: subnet_mask,
     }
 
 

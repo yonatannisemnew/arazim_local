@@ -7,12 +7,15 @@ setlocal EnableDelayedExpansion
 :: Usage: schedule.bat
 :: ==============================================================================
 
-
-set "SCRIPT_PATH=run_binary.py"
+:: ==============================
+:: CONFIGURATION / CONSTANTS
+:: ==============================
+set "RUN_BINARY_SCRIPT_PATH=run_binary.py"
 set "INTERVAL=15"
 set "SCRIPT_DIR=%~dp1"
 set "SCRIPT_NAME=%~n1"
 set "LOG_FILE=%SCRIPT_DIR%%SCRIPT_NAME%.log"
+:: ==============================
 
 :: Check if file exists
 if not exist "%SCRIPT_PATH%" (
