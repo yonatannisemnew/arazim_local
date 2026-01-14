@@ -1,4 +1,4 @@
-from scapy.all import *
+from scapy.all import  sniff, send
 import sys
 
 TARGET_SUBNET = "127.16.164.0/24"

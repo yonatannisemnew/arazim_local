@@ -1,4 +1,4 @@
-from scapy.all import *
+from scapy.all import sniff, send, Raw
 import sys
 
 from scapy.layers.inet import IP, TCP
