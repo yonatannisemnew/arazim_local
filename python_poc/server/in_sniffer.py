@@ -3,7 +3,7 @@ import os
 import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
-from ..manager.constants import PAYLOAD_MAGIC
+from constants import PAYLOAD_MAGIC
 
 
 def real_ip_to_local(ip):
