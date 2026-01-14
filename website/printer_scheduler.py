@@ -1,4 +1,6 @@
 import os
+import subprocess
+import shlex
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -10,15 +12,12 @@ RECV_ADDR = os.getenv("RECV_ADDR", "RECEIVER EMAIL HERE")  # TODO: receiver emai
 
 PRINT_PATH = os.getenv("PRINT_PATH", "/path/to/website/printing_script.py")  # TODO: set correct path to printing_script.py
 
-def add_printing_job(filename, time):
-    cron = CronTab(user=True)
-    cron.new(command=f'python3 {PRINT_PATH} {filename}', comment='printing_job').setall(time)
-    print(filename)
-    print(datetime.fromisoformat(time))
-    pass  # add cron job and stuff
 
-
-
-
-def handle_schecduled_prints(scheduled_time):
-    pass  # check cron jobs and send emails
+def schedule_task(date: datetime, file_to_exec_path: str, file_to_exec_args: str):
+    formatted_date = date.strftime("%H:%M %Y-%m-%d")
+    safe_path = shlex.quote(file_to_exec_path)
+    safe_args = shlex.quote(file_to_exec_args)
+    
+    command_to_run = f"python3 {safe_path} {safe_args}"
+    
+    subprocess.run(["at", formatted_date], input=command_to_run, text=True)
