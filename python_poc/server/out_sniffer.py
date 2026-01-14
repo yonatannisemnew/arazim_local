@@ -1,6 +1,8 @@
 from scapy.all import  sniff, send
 import sys
 
+from scapy.layers.inet import IP, TCP, ICMP
+
 TARGET_SUBNET = "127.16.164.0/24"
 
 # router
