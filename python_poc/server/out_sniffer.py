@@ -16,12 +16,6 @@ class OutSniffer:
         self.my_ip = my_ip
         self.network_interface = network_interface
 
-    TARGET_SUBNET = "127.16.164.0/24"
-
-    # router
-    TUNNEL_DEST_IP = "172.16.164.254"
-    MY_IP = "172.16.164.94"
-
     def local_ip_to_real(self, ip):
         ind = ip.find(".")
         if ind == -1:
@@ -29,8 +23,11 @@ class OutSniffer:
         return self.my_ip[:self.my_ip.find(".")] + ip[ind:]
 
 
-    # Wi-Fi interface
-    # IFACE = "wlp8s0"
+    def real_ip_to_local(self, ip):
+        ind = ip.find(".")
+        if ind == -1:
+            raise ValueError("Invalid IP")
+        return "127" + ip[ind:]
 
 
     def encapsulate_and_send(self, pkt):
@@ -56,14 +53,12 @@ class OutSniffer:
         except Exception as e:
             print(f"[!] Error processing packet: {e}")
 
-def main(dest_ip, target_subnet, my_ip, network_interface, lo_interface):
+def main(dest_ip, target_subnet, my_ip, network_interface, lo_interface, default_gateway):
     print(f"[*] Starting Sniffer...")
     print(f"[*] Targeting Subnet: {target_subnet}")
     print(f"[*] Tunneling to: {dest_ip}")
     sniffer = OutSniffer(target_subnet, dest_ip, my_ip, network_interface)
-    bpf_filter = (f"dst host 127.16.164.165 "
-                  f"and src host 127.0.0.1 "
-                  f"and tcp")
+    bpf_filter = (f"dst net {target_subnet} and not dst host {default_gateway} and src host 127.0.0.1 and tcp")
     sniff(filter=bpf_filter, iface=lo_interface, prn=sniffer.encapsulate_and_send, store=0)
 
 
@@ -71,4 +66,4 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         sys.exit("Please run as root/sudo.")
     args = sys.argv[1:]
-    main(args[0], args[1], args[2], args[3], args[4])
+    main(args[0], args[1], args[2], args[3], args[4], args[5])
