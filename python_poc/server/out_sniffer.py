@@ -2,11 +2,8 @@ import os
 import sys
 import argparse
 
-from mpmath.libmp import ifac
 from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
-
-from in_sniffer import real_ip_to_local
 from sniff_constants import PAYLOAD_MAGIC
 
 
