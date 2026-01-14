@@ -1,18 +1,11 @@
 import sys
+import os
+import argparse
 from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
 from sniff_constants import PAYLOAD_MAGIC
 
-TARGET_SUBNET_remove = "172.16.164.0/23"
 
-# router
-TUNNEL_DEST_IP_remove = "172.16.164.254"
-MY_IP_remove = "172.16.164.94"
-
-
-
-# wifi interface
-IFACE_remove = "wlp8s0"
 
 def real_ip_to_local(ip):
     ind = ip.find(".")
@@ -20,38 +13,47 @@ def real_ip_to_local(ip):
         raise ValueError("Invalid IP")
     return "127" + ip[ind:]
 
-def encapsulate_and_send(pkt):
+def decapsulate_and_inject(pkt):
     """
-    Takes the WHOLE packet (headers + data), converts to bytes,
-    and puts it inside an ICMP Echo Request, with a magic
+    Takes an ICMP echo packet, checks that the magic is there,
+    and injects the "raw" part into loopback.
     """
     try:
+        #make sure its our magic
         if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
             return
-
-        real_packet = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
-        real_packet[IP].src = real_ip_to_local(real_packet[IP].src)
-        real_packet[IP].dst = "127.0.0.1"
-        real_packet.show()
-        del real_packet[IP].chksum
-        del real_packet[TCP].chksum
-        send(real_packet, verbose=0, iface="lo")
-
-        print(
-            f"injected packet from {real_packet[IP].src}")
+        #get the raw, without magic (og packet)
+        encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
+        #change src and dst to allow sending in lo
+        encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
+        encapsulated[IP].dst = "127.0.0.1"
+        #delete checksums to force recalculation, and send :-)
+        del encapsulated[IP].chksum
+        del encapsulated[TCP].chksum
+        send(encapsulated, verbose=0, iface="lo")
 
     except Exception as e:
-        print(f"[!] Error processing packet: {e}")
+        pass
 
 def main():
-    print(f"[*] Starting Sniffer...")
-    print(f"[*] Targeting Subnet: {TARGET_SUBNET}")
-    print(f"[*] Tunneling to: {TUNNEL_DEST_IP}")
+    parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
+    parser.add_argument("--our-ip", dest="our_ip", required=True,
+                        help="our IP address to filter")
+    parser.add_argument("--tunnel-dst-ip", dest="tunnel_dst_ip", required=True,
+                        help="Expected source of captured packets")
+    parser.add_argument("--netiface", dest="netiface", required=True,
+                        help="Network interface to sniff on")
 
-    bpf_filter = (f"dst host {MY_IP} "
-                  f"and src host {TUNNEL_DEST_IP} "
+    args = parser.parse_args()
+    our_ip = args.our_ip
+    tunnel_dst_ip = args.tunnel_dst_ip
+    netiface = args.netiface
+
+    bpf_filter = (f"dst host {our_ip} "
+                  f"and src host {tunnel_dst_ip} "
                   "and icmp")
-    sniff(filter=bpf_filter, iface=IFACE, prn=encapsulate_and_send, store=0)
+    
+    sniff(filter=bpf_filter, iface=netiface, prn=decapsulate_and_inject, store=0)
 
 
 if __name__ == "__main__":
