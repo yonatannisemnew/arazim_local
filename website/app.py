@@ -2,9 +2,11 @@ import os
 import json
 import hashlib
 import uuid
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from printer_scheduler import schedule_task
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,6 +17,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default_dev_key')
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
 TASKS_FOLDER = os.getenv('TASKS_FOLDER', 'tasks')
+PREVIEW_FOLDER = os.getenv('PREVIEW_FOLDER', 'previews')
 ALLOWED_EXTENSIONS = set(os.getenv('ALLOWED_EXTENSIONS', 'pdf').split(','))
 
 # Add more fields here as needed in the future
@@ -107,6 +110,10 @@ def handle_file_upload():
         
         # 3. create the JSON file in the tasks folder
         create_task_json(full_path, secure_filename(file.filename), fields)
+
+        # 4. schedule the task using printer_scheduler
+        appointment_datetime = datetime.strptime(fields["appointment_time"], "%Y-%m-%dT%H:%M")
+        schedule_task(appointment_datetime, os.path.join(os.getcwd(), 'printing_script.py'), full_path)
         
         flash(f'Success! Task created for {fields["appointment_time"]}. File saved as {new_filename}', 'success')
         return redirect(url_for('show_add_file_form'))
