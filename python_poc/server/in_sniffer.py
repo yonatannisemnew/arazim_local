@@ -1,6 +1,8 @@
 from scapy.all import *
 import sys
 
+from scapy.layers.inet import IP, TCP
+
 TARGET_SUBNET = "172.16.164.0/23"
 
 # router
