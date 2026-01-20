@@ -11,10 +11,10 @@ def real_subnet_to_our(ip):
     last_ind = ip.rfind(".")
     if ind == -1 or last_ind == -1:
         raise ValueError("Invalid IP")
-    return ip[:last_ind]+".0"
+    return "127" + ip[ind:last_ind]+".0"
 
 
-def local_ip_to_real(ip, my_ip):
+def local_ip_to_real(ip, my_ip): # make it work for other subnet values
     ind = ip.find(".")
     if ind == -1:
         raise ValueError("Invalid IP")
@@ -34,16 +34,18 @@ class OutSniffer:
         self.network_interface = network_interface
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
-        real_net = real_subnet_to_our(target_subnet)
+        fake_subnet = real_subnet_to_our(target_subnet)
         self.bpf_filter = (
-            f"dst net {real_net} mask {self.target_subnet_mask} "
+            f"dst net {fake_subnet} mask {self.target_subnet_mask} "
             f"and src {self.my_ip} "
-            f"and not dst host {self.default_gateway}"
         )
         print(f"Using BPF filter: {self.bpf_filter}")
+
+
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
-    
+
+
     def encapsulate_and_send(self, pkt):
         try:
             if IP not in pkt:
@@ -52,10 +54,9 @@ class OutSniffer:
             # del pkt[IP].chksum
             # del pkt[TCP].chksum
             #adding into icmp payload, with magic
-            pkt.show()
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
-            original_dst = pkt[IP].dst
+            original_dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             print("IP DST:", original_dst)
             tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
             #tunnel_pkt.show()

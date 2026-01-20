@@ -19,8 +19,7 @@ class Sniffer:
         self.sniff_iface = sniff_iface
         self.lo_iface = lo_iface
         self.bpf_filter = (f"dst host {our_ip} "
-                  f"and src host {default_gateway} "
-                  "and icmp")
+                  f"and src {default_gateway} ")
     
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.sniff_iface, prn=self.decapsulate_and_inject, store=0)
@@ -36,6 +35,7 @@ class Sniffer:
                 return
             #get the raw, without magic (og packet)
             encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
+            print(encapsulated)
             #change src and dst to allow sending in lo
             encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
             encapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
