@@ -37,7 +37,7 @@ class Sniffer:
             encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
             #change src and dst to allow sending in lo
             encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
-            encapsulated[IP].dst = real_ip_to_local(encapsulated[IP].dst)
+            encapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
             #delete checksums to force recalculation, and send :-)
             del encapsulated[IP].chksum
             del encapsulated[TCP].chksum
