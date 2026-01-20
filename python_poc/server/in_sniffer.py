@@ -43,6 +43,7 @@ class Sniffer:
             decapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
             #delete checksums to force recalculation, and send :-)
             del decapsulated[IP].chksum
+            del decapsulated[IP].len
             if TCP in decapsulated:
                 print("hi")
                 del decapsulated[TCP].chksum
