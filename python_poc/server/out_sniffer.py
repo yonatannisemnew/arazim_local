@@ -6,6 +6,13 @@ from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 from sniff_constants import PAYLOAD_MAGIC
 
+def real_subnet_to_our(ip):
+    ind = ip.find(".")
+    last_ind = ip.rfind(".")
+    if ind == -1 or last_ind == -1:
+        raise ValueError("Invalid IP")
+    return ip[:last_ind]+".0"
+
 
 def local_ip_to_real(ip, my_ip):
     ind = ip.find(".")
@@ -27,7 +34,12 @@ class OutSniffer:
         self.network_interface = network_interface
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
-        self.bpf_filter = f"dst net {real_ip_to_local(target_subnet)} mask {self.target_subnet_mask}"
+        real_net = real_subnet_to_our(target_subnet)
+        self.bpf_filter = (
+            f"dst net {real_net} mask {self.target_subnet_mask} "
+            f"and not dst host {self.default_gateway}"
+        )
+        print(f"Using BPF filter: {self.bpf_filter}")
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
     
@@ -35,22 +47,21 @@ class OutSniffer:
         try:
             if IP not in pkt:
                 return
-            pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
-            print(f"IP is {pkt[IP].dst}")
-            pkt[IP].src = self.my_ip
             # #deleting the checksum to force recalculation
             # del pkt[IP].chksum
             # del pkt[TCP].chksum
             #adding into icmp payload, with magic
+            pkt.show()
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
-            original_dst = pkt[IP].dst
+            original_dst = pkt[ICMP][IP].dst
+            print("IP DST:", original_dst)
             tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
-            tunnel_pkt.show()
+            #tunnel_pkt.show()
             send(tunnel_pkt, verbose=0, iface=self.network_interface)
 
         except Exception as e:
-            pass
+            print("Error in encapsulate_and_send:", e)
 
 def main():
     parser = argparse.ArgumentParser(description="Sniffs for packets in subnet from lo and injects into normal iface")
