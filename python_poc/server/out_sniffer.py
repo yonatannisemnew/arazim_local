@@ -37,7 +37,8 @@ class OutSniffer:
         fake_subnet = real_subnet_to_our(target_subnet)
         self.bpf_filter = (
             f"dst net {fake_subnet} mask {self.target_subnet_mask} "
-            f"and src {self.my_ip} "
+            f"and ( src {self.my_ip} "
+            f"or src 127.0.0.1) "
         )
         print(f"Using BPF filter: {self.bpf_filter}")
 
