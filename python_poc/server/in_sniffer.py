@@ -36,17 +36,19 @@ class Sniffer:
                 return
             #get the raw, without magic (og packet)
             decapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
+            decapsulated.show()
             #change src and dst to allow sending in lo
             decapsulated[IP].src = real_ip_to_local(decapsulated[IP].src)
+
             decapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
             #delete checksums to force recalculation, and send :-)
             del decapsulated[IP].chksum
-            del decapsulated[TCP].chksum
+            if TCP in decapsulated:
+                del decapsulated[TCP].chksum
             decapsulated.show()
             send(decapsulated, verbose=0, iface=self.lo_iface)
-
         except Exception as e:
-            pass
+            print(e)
 
 def main():
     parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
