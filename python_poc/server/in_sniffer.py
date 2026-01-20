@@ -1,10 +1,10 @@
 import sys
 import os
 import argparse
-from scapy.all import sniff, send, Raw
+from scapy.all import sniff, send, Raw, conf,L3RawSocket
 from scapy.layers.inet import IP, TCP
 from sniff_constants import PAYLOAD_MAGIC 
-
+conf.L3socket = L3RawSocket
 def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
