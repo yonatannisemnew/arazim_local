@@ -35,7 +35,6 @@ class Sniffer:
                 return
             #get the raw, without magic (og packet)
             encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
-            print(encapsulated)
             #change src and dst to allow sending in lo
             encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
             encapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
