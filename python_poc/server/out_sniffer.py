@@ -20,14 +20,14 @@ def real_ip_to_local(ip):
     return "127" + ip[ind:]
 
 class OutSniffer:
-    def __init__(self, target_subnet, my_ip, network_interface, default_gateway, lo_iface):
+    def __init__(self, target_subnet,target_subnet_mask, my_ip, network_interface, default_gateway, lo_iface):
         self.target_subnet = target_subnet
+        self.target_subnet_mask = target_subnet_mask
         self.my_ip = my_ip
         self.network_interface = network_interface
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
-        self.bpf_filter = f"dst net {real_ip_to_local(target_subnet)}"
-    
+        self.bpf_filter = f"dst net {real_ip_to_local(target_subnet)} mask {self.target_subnet_mask}"
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
     
@@ -63,9 +63,11 @@ def main():
     parser.add_argument("--lo_iface", dest="lo_iface", required=True,
                         help="Network interface to send on (loopback)")
     parser.add_argument("--subnet", dest="subnet", required=True,
-                        help="subnet like 172.16.164.0/23")
+                        help="subnet like 172.16.164.0")
+    parser.add_argument("--subnet_mask", dest="subnet_mask", required=True,
+                        help="subnet mask like 255.255.255.0")
     args = parser.parse_args()
-    sniffer = OutSniffer(args.subnet, args.our_ip, args.send_iface, args.default_gateway,  args.lo_iface)
+    sniffer = OutSniffer(args.subnet, args.subnet_mask, args.our_ip, args.send_iface, args.default_gateway,  args.lo_iface)
     sniffer.start_sniff()
 
 
