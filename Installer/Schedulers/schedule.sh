@@ -7,7 +7,7 @@
 # ==============================================================================
 
 
-SCRIPT_PATH="run_binary.py"
+SCRIPT_PATH="../Arazim Local/manager/run_binary.py"
 INTERVAL="15"
 
 # Check if the Python file exists

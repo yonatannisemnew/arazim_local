@@ -2,6 +2,8 @@ import os
 import sys
 import shutil
 import subprocess
+import platform
+import ctypes
 
 # constants
 PROGRAM_FILES_X86 = os.environ.get("PROGRAMFILES(X86)") or "C:\\Program Files (x86)"
@@ -13,7 +15,10 @@ WINDOWS_X86 = "windows_x86"
 MAC_OS = "macos"
 LINUX_OS = "linux"
 UNKNOWN_OS = "unknown"
-SRC_MANAGER_PATH = os.path.join(os.path.dirname(os.path.abspath("manager")))
+TARGET = "Target"
+SRC_MANAGER_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(os.path.join("Arazim Local", "manager")))
+)
 OS_TO_PROGRAM_FILES_DICT = {
     WINDOWS_X64: PROGRAM_FILES_X64,
     WINDOWS_X86: PROGRAM_FILES_X86,
@@ -31,8 +36,36 @@ OS_TO_INSTALLER_DICT = {
 }
 
 
+def is_admin():
+    try:
+        # Check for Windows Admin
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        # Check for Linux/Mac Root (UID 0)
+        return os.geteuid() == 0
+
+
+def run_as_admin():
+    if is_admin():
+        # Already admin, nothing to do
+        return
+
+    print("Requesting administrative privileges...")
+
+    if platform.system() == "Windows":
+        # Re-run the script with the 'runas' verb (triggers UAC)
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, " ".join(sys.argv), None, 1
+        )
+    else:
+        # Re-run with sudo for Linux/Mac
+        subprocess.check_call(["sudo", sys.executable] + sys.argv)
+
+    sys.exit()
+
+
 def get_platform():
-    os_name = sys.platform.system()
+    os_name = platform.system()
     is_64bit = sys.maxsize > 2**32
 
     if os_name == "Windows":
@@ -46,27 +79,19 @@ def get_platform():
 
 
 def main():
+    run_as_admin()
     platform = get_platform()
     if platform == UNKNOWN_OS or platform not in OS_TO_INSTALLER_DICT:
         print("Unsupported operating system.")
         return
     print(f"Detected platform: {platform}")
     installer_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), OS_TO_INSTALLER_DICT[platform]
+        os.path.dirname(os.path.abspath(__file__)),
+        TARGET,
+        OS_TO_INSTALLER_DICT[platform],
     )
     subprocess.run([installer_path], shell=True)
 
-    """
-    os.makedirs(
-        os.path.join(OS_TO_PROGRAM_FILES_DICT[platform], "Arazim Local"), exist_ok=True
-    )
-    dest_path = os.path.join(
-        OS_TO_PROGRAM_FILES_DICT[platform], "Arazim Local", "manager"
-    )
-    shutil.copy2(SRC_MANAGER_PATH, dest_path)
-    if platform == WINDOWS_X64 or platform == WINDOWS_X86:
-        schedule_path = os.path.join(dest_path, REL_SCHEDULE_BAT_PATH)
-        subprocess.run([schedule_path], shell=True)
-    elif platform == MAC_OS or platform == LINUX_OS:
-        schedule_path = os.path.join(dest_path, REL_SCHEDULE_SH_PATH)
-        subprocess.run([RUN_SCRIPT_LINUX, schedule_path])"""
+
+if __name__ == "__main__":
+    main()
