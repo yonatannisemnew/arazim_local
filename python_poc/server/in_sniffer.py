@@ -19,7 +19,8 @@ class Sniffer:
         self.sniff_iface = sniff_iface
         self.lo_iface = lo_iface
         self.bpf_filter = (f"dst host {our_ip} "
-                  f"and src {default_gateway} ")
+                f"and src {default_gateway} "
+                f"and icmp")
     
     def start_sniff(self):
         sniff(filter=self.bpf_filter, iface=self.sniff_iface, prn=self.decapsulate_and_inject, store=0)
@@ -34,14 +35,15 @@ class Sniffer:
             if pkt[Raw].load[:len(PAYLOAD_MAGIC)] != PAYLOAD_MAGIC:
                 return
             #get the raw, without magic (og packet)
-            encapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
+            decapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
             #change src and dst to allow sending in lo
-            encapsulated[IP].src = real_ip_to_local(encapsulated[IP].src)
-            encapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
+            decapsulated[IP].src = real_ip_to_local(decapsulated[IP].src)
+            decapsulated[IP].dst = "127.0.0.1" #real_ip_to_local(encapsulated[IP].dst)
             #delete checksums to force recalculation, and send :-)
-            del encapsulated[IP].chksum
-            del encapsulated[TCP].chksum
-            send(encapsulated, verbose=0, iface=self.lo_iface)
+            del decapsulated[IP].chksum
+            del decapsulated[TCP].chksum
+            decapsulated.show()
+            send(decapsulated, verbose=0, iface=self.lo_iface)
 
         except Exception as e:
             pass
