@@ -54,7 +54,10 @@ class OutSniffer:
             pkt.show()
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
-            original_dst = pkt[ICMP][IP].dst
+            if ICMP in pkt:
+                original_dst = pkt[ICMP].payload.dst
+            else:
+                original_dst = pkt[IP].dst
             print("IP DST:", original_dst)
             tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
             #tunnel_pkt.show()
