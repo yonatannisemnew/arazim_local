@@ -44,6 +44,7 @@ class Sniffer:
             #delete checksums to force recalculation, and send :-)
             del decapsulated[IP].chksum
             if TCP in decapsulated:
+                print("hi")
                 del decapsulated[TCP].chksum
             decapsulated.show()
             send(decapsulated, verbose=0, iface=self.lo_iface)
