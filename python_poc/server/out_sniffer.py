@@ -37,6 +37,7 @@ class OutSniffer:
         real_net = real_subnet_to_our(target_subnet)
         self.bpf_filter = (
             f"dst net {real_net} mask {self.target_subnet_mask} "
+            f"and src {self.my_ip} "
             f"and not dst host {self.default_gateway}"
         )
         print(f"Using BPF filter: {self.bpf_filter}")
@@ -54,10 +55,7 @@ class OutSniffer:
             pkt.show()
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
-            if ICMP in pkt:
-                original_dst = pkt[ICMP].payload.dst
-            else:
-                original_dst = pkt[IP].dst
+            original_dst = pkt[IP].dst
             print("IP DST:", original_dst)
             tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
             #tunnel_pkt.show()
