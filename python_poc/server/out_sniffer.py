@@ -58,7 +58,7 @@ def main():
                         help="our IP address to filter")
     parser.add_argument("--default_gateway", dest="default_gateway", required=True,
                         help="Expected source of captured packets")
-    parser.add_argument("--send_iface", dest="send_iface", required=True,
+    parser.add_argument("--main_iface", dest="main_iface", required=True,
                         help="Network interface to sniff on")
     parser.add_argument("--lo_iface", dest="lo_iface", required=True,
                         help="Network interface to send on (loopback)")
@@ -67,7 +67,7 @@ def main():
     parser.add_argument("--subnet_mask", dest="subnet_mask", required=True,
                         help="subnet mask like 255.255.255.0")
     args = parser.parse_args()
-    sniffer = OutSniffer(args.subnet, args.subnet_mask, args.our_ip, args.send_iface, args.default_gateway,  args.lo_iface)
+    sniffer = OutSniffer(args.subnet, args.subnet_mask, args.our_ip, args.main_iface, args.default_gateway,  args.lo_iface)
     sniffer.start_sniff()
 
 
