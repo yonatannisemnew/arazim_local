@@ -11,6 +11,13 @@ def real_ip_to_local(ip):
         raise ValueError("Invalid IP")
     return "127" + ip[ind:]
 
+def real_subnet_to_local(ip):
+    ind = ip.find(".")
+    last_ind = ip.rfind(".")
+    if ind == -1 or last_ind == -1:
+        raise ValueError("Invalid IP")
+    return "127" + ip[ind:last_ind]+".0"
+
 class Sniffer:
     def __init__(self, our_ip, default_gateway, sniff_iface, lo_iface):
         self.our_ip = our_ip
