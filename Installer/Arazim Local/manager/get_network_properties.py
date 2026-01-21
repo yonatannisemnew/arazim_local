@@ -1,9 +1,9 @@
 import subprocess
 import platform
 import psutil
-from scapy.all import *
+from scapy.all import get_if_addr, conf, socket
 from constants import *
-
+import re
 
 def get_current_network_name():
     try:
@@ -19,15 +19,9 @@ def get_current_network_name():
                     return line.split(":")[1].strip()
 
         elif os_name == MACOS:  # macOS
-            # Query macOS airport utility
-            cmd = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I"
-            output = subprocess.check_output(cmd, shell=True).decode(
-                DECODE_FORMAT, errors="ignore"
-            )
-            for line in output.split("\n"):
-                if " SSID" in line:
-                    return line.split(":")[1].strip()
-
+            #TODO: change to checking the subnet!!!!!!
+            return "Building_G2"
+        
         elif os_name == LINUX:
             # Query Linux nmcli
             output = subprocess.check_output(

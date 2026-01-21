@@ -4,6 +4,7 @@ This module contains constant values used throughout the manager directory.
 """
 
 import sys
+import os
 
 # Constant values for get_network_properties.py
 WINDOWS = "Windows"
@@ -42,12 +43,13 @@ PYTHON_BINARY = sys.executable
 the format is a list of lists, each list is a binary to run where the first element
 is the binary path and the elements after are its arguments
 """
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 BACKGROUND_BINARIES_TO_RUN = [
-    [PYTHON_BINARY, "sniffers/in_sniffer.py"],
-    [PYTHON_BINARY, "sniffers/out_sniffer.py"]
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", "in_sniffer.py")],
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", "out_sniffer.py")],
 ]
 
 TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds
-PATH_TO_RUNNING_BINARIES_FILE = "C:\\Users\\samel\\arazim_practice\\networks_exercises\\arazim_local\\arazim_local\\Installer\\Arazim Local\\manager\\current_running_binaries.json"
+PATH_TO_RUNNING_BINARIES_FILE = os.path.join(CURRENT_DIRECTORY, "current_running_binaries.json")
 PID_KEY = "pid"
 START_TIME_KEY = "start_time"

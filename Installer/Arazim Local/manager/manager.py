@@ -13,6 +13,7 @@ LAST_CONNECTION_TO_G2 = 0
 
 
 def is_connection_new():
+    global LAST_CONNECTION_TO_G2
     current_time  = time.time()
     if (current_time - LAST_CONNECTION_TO_G2) > (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1):
         LAST_CONNECTION_TO_G2 = current_time
@@ -21,11 +22,12 @@ def is_connection_new():
     return False
 
 def is_disconnected_now_from_G2():
+    global LAST_CONNECTION_TO_G2
     current_time  = time.time()
     return (current_time - LAST_CONNECTION_TO_G2) < (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1)
 
 
-def is_process_running(pid, start_time=""):
+def is_process_running_by_pid(pid, start_time=""):
     """
     Docstring for check_pid
     :param pid: process id
@@ -46,14 +48,14 @@ def is_manager_running():
     with the current process's PID and time of execution and returns False.
     """
     pid = os.getpid()
-    with open(PATH_TO_RUNNING_BINARIES_FILE) as f:
+    with open(PATH_TO_RUNNING_BINARIES_FILE, 'r') as f:
         data = f.read()
     if len(data) != 0:
         json_data = json.loads(data)
         running_pid = json_data.get("pid", [])
         start_time = json_data.get("start time", [])
-        print(running_pid, start_time)
-        if is_process_running(running_pid, start_time):
+        #print(running_pid, start_time)
+        if is_process_running_by_pid(running_pid, start_time):
             return True
 
     with open(PATH_TO_RUNNING_BINARIES_FILE, "w") as f:
@@ -62,19 +64,19 @@ def is_manager_running():
     return False
 
 
-def is_process_running(process):
+def is_subprocess_running(process):
     """
     Docstring for is_sniffer_running
 
     :param process: the current running process
     :return: True if there is a process running, False otherwise
     """
-    print(process)
+    #print(process)
     if process is None:
         return False
     if process.poll() is not None:
         return_code = process.returncode
-        print(f"Sniffer process ended with return code: {return_code}")
+        print(f"subprocess ended with return code: {return_code}")
         return False
     return True
 
@@ -94,7 +96,7 @@ def watchdog(
     :param process: the current running process
     :return: the process if it is running, otherwise starts a new process and returns it
     """
-    if is_process_running(process):
+    if is_subprocess_running(process):
         return process
     else:
         process = Popen(binary_args)
@@ -128,7 +130,7 @@ def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
     if is_manager_running():
         print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
-    processes = [None for _ in backround_binaries_to_run.keys()]
+    processes = [None for _ in backround_binaries_to_run]
     while True:
         try:
             network_properties = get_network_properties()
