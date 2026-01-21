@@ -1,9 +1,12 @@
+import ipaddress
+import sys
 from constants import *
 from scapy.all import *
-from scapy.all import IP, ICMP, Raw, send
+from scapy.all import IP, Raw
 import pydivert
 from networkstats import NetworkStats
-import packet_diverter
+from sniffer_utils import sniffer_parse_args
+
 
 def send_packet_pydivert(scapy_ip_packet, div_handle: pydivert.WinDivert = None):
     if scapy_ip_packet.haslayer("Ether"):
@@ -53,13 +56,13 @@ def sniffer(network_stats):
         sniff(filter=bpf, prn= lambda pack: handle_packet(pack, network_stats, w), store=False)
 
 
-def main():
-    network_stats = NetworkStats(MY_IP, ROUTER_IP, SUBNET_MASK)
+def main(my_ip: str, router_ip: str, subnet_mask: str):
+    network_stats = NetworkStats(my_ip, router_ip, subnet_mask)
     sniffer(network_stats)
 
 
 if __name__ == "__main__":
-    main()
-
+    my_ip, router_ip, subnet_mask = sniffer_parse_args(sys.argv)
+    main(my_ip, router_ip, subnet_mask)
 
 #python3 C:\Users\simon\Desktop\Yuvi\Arazim\arazim_local\windows_communication\in_sniffer_windows.py

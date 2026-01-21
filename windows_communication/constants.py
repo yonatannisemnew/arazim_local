@@ -6,3 +6,7 @@ PAKCET_DIRECTION_OUT = 0
 ROUTER_IP = "172.16.159.254"
 SUBNET_MASK = "255.255.254.0"
 MY_IP = "172.16.158.75"
+
+
+
+# args - router ip, subnet mask, my ip, interface 
