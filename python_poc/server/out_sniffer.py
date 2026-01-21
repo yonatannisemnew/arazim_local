@@ -6,12 +6,25 @@ from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 from sniff_constants import PAYLOAD_MAGIC
 
-def real_subnet_to_our(ip):
-    ind = ip.find(".")
-    last_ind = ip.rfind(".")
-    if ind == -1 or last_ind == -1:
-        raise ValueError("Invalid IP")
-    return "127" + ip[ind:last_ind]+".0"
+def real_subnet_to_our(ip, subnet_mask):
+    # Split the strings into lists of octets
+    ip_parts = ip.split('.')
+    mask_parts = subnet_mask.split('.')
+
+    if len(ip_parts) != 4 or len(mask_parts) != 4:
+        raise ValueError("Invalid IP or Subnet Mask format")
+
+    # Perform bitwise AND on each octet
+    # int(a) & int(b) calculates the network portion
+    network_parts = [
+        str(int(ip_parts[i]) & int(mask_parts[i]))
+        for i in range(4)
+    ]
+
+    # Join them back into a standard IP string
+    res =  ".".join(network_parts[1:])
+    res = "127." + res
+    return res
 
 
 def local_ip_to_real(ip, my_ip): # make it work for other subnet values
