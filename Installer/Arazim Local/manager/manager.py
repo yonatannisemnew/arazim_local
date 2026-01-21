@@ -8,6 +8,22 @@ import os
 import json
 from constants import *
 
+LAST_CONNECTION_TO_G2 = 0
+
+
+
+def is_connection_new():
+    current_time  = time.time()
+    if (current_time - LAST_CONNECTION_TO_G2) > (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1):
+        LAST_CONNECTION_TO_G2 = current_time
+        return True
+    LAST_CONNECTION_TO_G2 = current_time
+    return False
+
+def is_disconnected_now_from_G2():
+    current_time  = time.time()
+    return (current_time - LAST_CONNECTION_TO_G2) < (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1)
+
 
 def is_process_running(pid, start_time=""):
     """
@@ -19,12 +35,12 @@ def is_process_running(pid, start_time=""):
     return psutil.pid_exists(pid) and psutil.Process(pid).create_time() == start_time
 
 
-def check_running_processes():
+def is_manager_running():
     """
-    Docstring for check_running_processes
+    Docstring for is_manager_running
 
-    :return: True if there is a process running, False otherwise
-    This function checks if there are any running processes recorded in the
+    :return: True if there is a manager running, False otherwise
+    This function checks if there are any running managers recorded in the
     "current_running_binaries.json" file. If any of the recorded PIDs are
     currently active, it returns True. If none are active, it updates the file
     with the current process's PID and time of execution and returns False.
@@ -46,7 +62,7 @@ def check_running_processes():
     return False
 
 
-def is_sniffer_running(process):
+def is_process_running(process):
     """
     Docstring for is_sniffer_running
 
@@ -67,8 +83,8 @@ def find_server():
     return "Server_placeholder"  # placeholder for actual implementation
 
 
-def in_g2_logic(
-    binary_path, args, process
+def watchdog(
+    binary_args, process
 ):  # the args Omri' and Cyber (Anaki) need are my_ip, router_ip, default_device, subnet_mask
     """
     Docstring for in_g2_logic
@@ -78,19 +94,18 @@ def in_g2_logic(
     :param process: the current running process
     :return: the process if it is running, otherwise starts a new process and returns it
     """
-    if is_sniffer_running(process):
+    if is_process_running(process):
         return process
     else:
-        # server = find_server() (for later use)
-        process = Popen([binary_path] + [str(arg) for arg in args])
+        process = Popen(binary_args)
         return process
 
 
-def not_in_g2_logic(process):
+def kill_process(process):
     """
-    Docstring for not_in_g2_logic
+    Docstring for kill_process
     :param process: the current running process
-    :return: None after terminating the process if it is running
+    :return: None
     """
     if process is not None:
         process.terminate()
@@ -108,33 +123,33 @@ def once_first_connected():
 def once_first_disconnected():
     print("Disconnecting from G2 network...")  # placeholder for actual implementation
 
-
-def dummy_main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
-    if check_running_processes():
+    
+def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
+    if is_manager_running():
         print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
-    input()
-
-
-def main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
-    if check_running_processes():
-        print(PROCESSES_ALREADY_RUNNING_MESSAGE)
-        return
-    processes = [None for _ in binaries_to_execute.keys()]
+    processes = [None for _ in backround_binaries_to_run.keys()]
     while True:
         try:
             network_properties = get_network_properties()
             if network_properties[NETWORK_NAME_KEY] == G2_NETWORK_NAME:
-                i = 0
-                for binary_path, binary_args in binaries_to_execute:
-                    processes[i] = in_g2_logic(binary_path, binary_args, processes[i])
+                ###always running binaries
+                if is_connection_new():
+                    once_first_connected()
+                for i, binary_args in enumerate(backround_binaries_to_run):
+                    processes[i] = watchdog(binary_args, processes[i])
                     print(
                         f"Process {i}: PID {processes[i].pid if processes[i] else 'None'}"
                     )
-                    i += 1
             else:
+                #not in G2 logic
+                if is_disconnected_now_from_G2():
+                    once_first_disconnected()
+
+
+                #kill all running sniffers
                 for i, process in enumerate(processes):
-                    processes[i] = not_in_g2_logic(process)
+                    processes[i] = kill_process(process)
             time.sleep(t)
         except KeyboardInterrupt:
             print(KEYBOARD_INTERRUPT_MESSAGE)
@@ -147,6 +162,4 @@ def main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
 
 
 if __name__ == "__main__":
-    binaries_to_execute = BINARIES_TO_EXEC.keys()
-    t = TIME_INTERVAL_BETWEEN_CHECKS
-    main(binaries_to_execute, t)
+    main(BACKGROUND_BINARIES_TO_RUN, TIME_INTERVAL_BETWEEN_CHECKS)

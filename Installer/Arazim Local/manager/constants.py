@@ -3,6 +3,8 @@ Docstring for manager.constants
 This module contains constant values used throughout the manager directory.
 """
 
+import sys
+
 # Constant values for get_network_properties.py
 WINDOWS = "Windows"
 LINUX = "Linux"
@@ -24,10 +26,27 @@ SUBNET_MASK_KEY = "subnet_mask"
 G2_NETWORK_NAME = "Building_G2"
 PROCESSES_ALREADY_RUNNING_MESSAGE = "Required processes are already running. Exiting."
 KEYBOARD_INTERRUPT_MESSAGE = "Execution interrupted by user."
+
+PYTHON_BINARY = sys.executable
 # format: binary_path: [arg1, arg2, ...]
-BINARIES_TO_EXEC = {
-    "python": ["manager\\test.py"]
-}  # TODO: replace with actual binary paths and their args
+
+"""
+   {
+        "network_name",
+        "my_ip",
+        "router_ip",
+        "subnet_mask",
+        "loopback_device"]"""
+"""
+
+the format is a list of lists, each list is a binary to run where the first element
+is the binary path and the elements after are its arguments
+"""
+BACKGROUND_BINARIES_TO_RUN = [
+    [PYTHON_BINARY, "sniffers/in_sniffer.py"],
+    [PYTHON_BINARY, "sniffers/out_sniffer.py"]
+]
+
 TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds
 PATH_TO_RUNNING_BINARIES_FILE = "C:\\Users\\samel\\arazim_practice\\networks_exercises\\arazim_local\\arazim_local\\Installer\\Arazim Local\\manager\\current_running_binaries.json"
 PID_KEY = "pid"
