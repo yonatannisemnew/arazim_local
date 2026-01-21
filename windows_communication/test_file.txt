@@ -1,2 +1,2 @@
 This is a test file.
-Argument received: NIGGER!!!
+Argument received: works!!!

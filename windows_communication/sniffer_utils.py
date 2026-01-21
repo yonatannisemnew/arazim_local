@@ -25,3 +25,4 @@ def sniffer_parse_args(args: list[str]) -> tuple[str, str, str, int]:
     interface_index = int(args[4])
     return my_ip, router_ip, subnet_mask, interface_index
 
+

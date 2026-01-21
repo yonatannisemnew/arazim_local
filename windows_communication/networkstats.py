@@ -1,7 +1,7 @@
 import ipaddress
 class NetworkStats:
 
-    def __init__(self, my_ip, router_ip, subnet_mask, interface_index=None):
+    def __init__(self, my_ip, router_ip, subnet_mask, interface_index):
         self.my_ip = my_ip
         self.router_ip = router_ip
         self.subnet_mask = subnet_mask
