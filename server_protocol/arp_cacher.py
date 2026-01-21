@@ -18,7 +18,7 @@ def insert_to_arp_cache(ip, mac, device=""):
             device = subprocess.check_output(cmd, shell=True, text=True).strip()
 
         print("need to add arp entry, sudo required")
-        subprocess.run(["sudo", "-S", "ip", "n", "add", ip, "lladdr", mac, "dev", device, "nud", "permanent"],
+        subprocess.run(["sudo", "-S", "ip", "n", "add", ip, "lladdr", mac, "dev", device],
                        capture_output=True, text=True)
 
     # --- Windows Logic ---
@@ -51,9 +51,9 @@ def insert_to_arp_cache(ip, mac, device=""):
         pass
 
 
-if __name__ == '__main__':
-    # Ensure you run the terminal/IDE as Administrator on Windows
-    insert_to_arp_cache("12.14.12.14", "12:12:12:12:12:12")
+# if __name__ == '__main__':
+#     # Ensure you run the terminal/IDE as Administrator on Windows
+#     insert_to_arp_cache("12.14.12.14", "12:12:12:12:12:12")
 
 # def insert_to_arp_cache(ip, mac, device=""):
 #     if sys.platform.startswith("linux"): #linux

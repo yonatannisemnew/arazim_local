@@ -1,10 +1,11 @@
+from scapy.all import *
 import socket
 import struct
 import array
 
 TARGET_PAYLOAD = b"nif_local_salta_8223"
 CONFIRMATION = b"NOT_EZ_GIMEL_SHTAIM"
-MY_IP = "172.16.164.6"
+MY_IP = get_if_addr(conf.iface)
 DEFAULT_GATEWAY = "172.16.164.254"
 XOR_KEY = "222.222.222.222"
 
@@ -66,7 +67,7 @@ def start_server():
     sock.bind(('', 0))
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1) #Allows custom IP header
 
-    print(f"LISTENING!!!: {DEFAULT_GATEWAY}")
+    print(f"LISTENING!!!: {MY_IP}")
     try:
         while True:
             raw_data, addr = sock.recvfrom(65535)
