@@ -29,6 +29,6 @@ BINARIES_TO_EXEC = {
     "python": ["manager\\test.py"]
 }  # TODO: replace with actual binary paths and their args
 TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds
-PATH_TO_RUNNING_BINARIES_FILE = "manager/current_running_binaries.json"
-PID_KEY = "PID"
+PATH_TO_RUNNING_BINARIES_FILE = "C:\\Users\\samel\\arazim_practice\\networks_exercises\\arazim_local\\arazim_local\\Installer\\Arazim Local\\manager\\current_running_binaries.json"
+PID_KEY = "pid"
 START_TIME_KEY = "start_time"

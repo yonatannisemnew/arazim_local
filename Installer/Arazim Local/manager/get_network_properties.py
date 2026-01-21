@@ -3,7 +3,6 @@ import platform
 import psutil
 from scapy.all import *
 from constants import *
-from snippets.DNS.client import MY_IP
 
 
 def get_current_network_name():

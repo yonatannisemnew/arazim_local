@@ -2,13 +2,14 @@ from subprocess import Popen
 import psutil
 from scapy.all import *
 import time
+
 from get_network_properties import get_network_properties
 import os
 import json
 from constants import *
 
 
-def check_pid(pid, start_time=""):
+def is_process_running(pid, start_time=""):
     """
     Docstring for check_pid
     :param pid: process id
@@ -31,20 +32,17 @@ def check_running_processes():
     pid = os.getpid()
     with open(PATH_TO_RUNNING_BINARIES_FILE) as f:
         data = f.read()
-    json_data = json.loads(data)
-    running_pids = json_data.get(PID_KEY, [])
-    start_times = json_data.get(START_TIME_KEY, [])
-
-    if any(
-        check_pid(running_pid, start_time)
-        for running_pid, start_time in zip(running_pids, start_times)
-    ):
-        return True
+    if len(data) != 0:
+        json_data = json.loads(data)
+        running_pid = json_data.get("pid", [])
+        start_time = json_data.get("start time", [])
+        print(running_pid, start_time)
+        if is_process_running(running_pid, start_time):
+            return True
 
     with open(PATH_TO_RUNNING_BINARIES_FILE, "w") as f:
-        json.dump(
-            {PID_KEY: [pid], START_TIME_KEY: [psutil.Process(pid).create_time()]}, f
-        )
+        json.dump({"pid": pid, "start time": psutil.Process(pid).create_time()}, f)
+
     return False
 
 
@@ -109,6 +107,13 @@ def once_first_connected():
 
 def once_first_disconnected():
     print("Disconnecting from G2 network...")  # placeholder for actual implementation
+
+
+def dummy_main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
+    if check_running_processes():
+        print(PROCESSES_ALREADY_RUNNING_MESSAGE)
+        return
+    input()
 
 
 def main(binaries_to_execute, t, network_name=G2_NETWORK_NAME):
