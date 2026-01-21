@@ -2,6 +2,8 @@ import base64
 import mimetypes
 import os
 import sys
+import json
+from dotenv import load_dotenv
 from email.message import EmailMessage
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
@@ -16,6 +18,10 @@ import os.path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
+
+load_dotenv()
+
+TASKS_FOLDER = os.getenv('TASKS_FOLDER', 'tasks')
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.compose']
@@ -39,7 +45,7 @@ def get_creds():
             token.write(creds.to_json())
     return creds
 
-def gmail_create_draft_with_attachment(attachment_filename):
+def gmail_create_draft_with_attachment(task_data):
   """Create and insert a draft email with attachment.
    Print the returned draft's message and id.
   Returns: Draft object, including draft id and message meta data.
@@ -49,6 +55,7 @@ def gmail_create_draft_with_attachment(attachment_filename):
   for guides on implementing OAuth2 for the application.
   """
   creds = get_creds()
+  attachment_filename = task_data["file_path"]
 
   try:
     # create gmail api client
@@ -58,6 +65,9 @@ def gmail_create_draft_with_attachment(attachment_filename):
     # headers
     mime_message["To"] = "sacha.hallermeier@gmail.com"
     mime_message["Subject"] = "Arazim Print Job"
+
+    # TODO: change to actually print meny copies
+    mime_message.set_content(f"copies: {task_data['copies']}")
 
     # guessing the MIME type
     type_subtype, _ = mimetypes.guess_type(attachment_filename)
@@ -117,9 +127,28 @@ def build_file_part(file):
   msg.add_header("Content-Disposition", "attachment", filename=filename)
   return msg
 
+def extract_task_json(task_json_path):
+    if not os.path.exists(task_json_path):
+        print('Task not found.', file=sys.stderr)
+        return None
+
+    try:
+        with open(task_json_path, 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+        return data
+    except Exception:
+        print('Could not read task file.', file=sys.stderr)
+        return None
+
 
 if __name__ == "__main__":
   if (len(sys.argv) != 2):
-    print("Usage: python printing_script.py <path_to_file_to_attach>")
+    print("Usage: python printing_script.py <job_json_path>")
     sys.exit(1)
-  gmail_create_draft_with_attachment(sys.argv[1])
+  task_data = extract_task_json(sys.argv[1])
+  if task_data is None:
+      sys.exit(1)
+  # Send the email with the attachment
+  gmail_create_draft_with_attachment(task_data)
+  # Clean up old tasks after sending the email
+  os.remove(sys.argv[1])

@@ -56,13 +56,15 @@ def calculate_file_hash(file_stream):
 def create_task_json(file_path, file_name, fields):
     """
     Create a JSON file in the tasks folder with details about the print job.
-    """
-    task_id = str(uuid.uuid4()) # unique identifier for this specific task
-    
+    """    
+
+    task_id = str(uuid.uuid4())
+
     task_data = {
         "task_id": task_id,
         "file_path": file_path,
         "file_name": file_name,
+        "copies": 1,
     }
     
     # Add additional fields from the form
@@ -75,7 +77,59 @@ def create_task_json(file_path, file_name, fields):
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(task_data, f, indent=4, ensure_ascii=False)
         
-    return json_path
+    return task_id
+
+
+@app.route('/scheduled_prints', methods=['GET'])
+def scheduled_prints():
+    """List scheduled print tasks and show copies with increment button."""
+    tasks = []
+    folder = app.config.get('TASKS_FOLDER', 'tasks')
+    try:
+        files = sorted([f for f in os.listdir(folder) if f.endswith('.json')])
+    except FileNotFoundError:
+        files = []
+
+    for fname in files:
+        path = os.path.join(folder, fname)
+        try:
+            with open(path, 'r', encoding='utf-8') as fh:
+                data = json.load(fh)
+        except Exception:
+            continue
+        # ensure copies exists
+        data.setdefault('copies', 1)
+        tasks.append(data)
+
+    return render_template('scheduled_prints.html', tasks=tasks)
+
+
+@app.route('/task/<task_id>/increment', methods=['POST'])
+def increment_copies(task_id):
+    """Increase the copies count for a given task JSON by 1."""
+    folder = app.config.get('TASKS_FOLDER', 'tasks')
+    json_path = os.path.join(folder, f"{task_id}.json")
+    if not os.path.exists(json_path):
+        flash('Task not found.', 'error')
+        return redirect(url_for('scheduled_prints'))
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+    except Exception:
+        flash('Could not read task file.', 'error')
+        return redirect(url_for('scheduled_prints'))
+
+    data['copies'] = int(data.get('copies', 1)) + 1
+
+    try:
+        with open(json_path, 'w', encoding='utf-8') as fh:
+            json.dump(data, fh, indent=4, ensure_ascii=False)
+        flash(f"Copies increased to {data['copies']}", 'success')
+    except Exception:
+        flash('Could not update task file.', 'error')
+
+    return redirect(url_for('scheduled_prints'))
 
 # --- Routes ---
 
@@ -142,13 +196,13 @@ def handle_file_upload():
 
         if not os.path.exists(preview_path):
             file.save(preview_path)  # Save a copy for preview purposes
-        
-        # 3. create the JSON file in the tasks folder
-        create_task_json(full_path, secure_filename(file.filename), fields)
 
-        # 4. schedule the task using printer_scheduler
-        appointment_datetime = datetime.strptime(fields["appointment_time"], "%Y-%m-%dT%H:%M")
-        schedule_task(appointment_datetime, os.path.join(os.getcwd(), 'printing_script.py'), full_path)
+        # 3. create task JSON
+        task_id = create_task_json(full_path, secure_filename(file.filename), fields)
+
+        # 4. schedule the task
+        appointment_dt = datetime.fromisoformat(fields['appointment_time'])
+        schedule_task(appointment_dt, os.path.join(os.getcwd(), 'printing_script.py'), task_id)
         
         flash(f'Success! Task created for {fields["appointment_time"]}. File saved as {secure_filename(file.filename)}', 'success')
         return redirect(url_for('show_add_file_form'))
