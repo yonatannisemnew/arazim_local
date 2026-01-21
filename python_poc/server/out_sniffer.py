@@ -47,7 +47,7 @@ class OutSniffer:
         self.network_interface = network_interface
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
-        fake_subnet = real_subnet_to_our(target_subnet)
+        fake_subnet = real_subnet_to_our(target_subnet, self.target_subnet_mask)
         self.bpf_filter = (
             f"dst net {fake_subnet} mask {self.target_subnet_mask} "
             f"and ( src {self.my_ip} "
