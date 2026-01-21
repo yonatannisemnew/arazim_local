@@ -16,6 +16,7 @@ MAC_OS = "macos"
 LINUX_OS = "linux"
 UNKNOWN_OS = "unknown"
 TARGET = "Target"
+SCHEDULERS = "Schedulers"
 SRC_MANAGER_PATH = os.path.join(
     os.path.dirname(os.path.abspath(os.path.join("Arazim Local", "manager")))
 )
@@ -25,8 +26,6 @@ OS_TO_PROGRAM_FILES_DICT = {
     MAC_OS: PROGRAM_FILES_MAC,
     LINUX_OS: PROGRAM_FILES_LINUX,
 }
-REL_SCHEDULE_BAT_PATH = "schedule.bat"
-REL_SCHEDULE_SH_PATH = "schedule.sh"
 RUN_SCRIPT_LINUX = "/bin/bash"
 OS_TO_INSTALLER_DICT = {
     WINDOWS_X64: "installer_windows_x64.bat",
@@ -35,6 +34,12 @@ OS_TO_INSTALLER_DICT = {
     LINUX_OS: "installer_linux.sh",
 }
 
+OS_TO_SCHEDULER_DICT = {
+    WINDOWS_X64: "schedule_windows_x64.bat",
+    WINDOWS_X86: "schedule_windows_x86.bat",
+    MAC_OS: "schedule_macos.sh",
+    LINUX_OS: "schedule_linux.sh",
+}
 
 def is_admin():
     try:
@@ -90,11 +95,18 @@ def main():
         TARGET,
         OS_TO_INSTALLER_DICT[platform],
     )
+
+    scheduler_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        SCHEDULERS,
+        OS_TO_SCHEDULER_DICT[platform],
+    )
     if platform in [MAC_OS, LINUX_OS]:
         subprocess.run(["/bin/bash", installer_path])
+        subprocess.run(["/bin/bash", scheduler_path])
     else:
         subprocess.run([installer_path], shell=True)
-
+        subprocess.run([scheduler_path], shell=True)
 
 if __name__ == "__main__":
     main()

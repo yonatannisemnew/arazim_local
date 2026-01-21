@@ -2,15 +2,20 @@
 setlocal EnableDelayedExpansion
 
 :: ==============================================================================
-:: Script Name: schedule.bat
+:: Script Name: schedule_windows_x86.bat
 :: Description: Schedules a Python script to run every T minutes using Windows Task Scheduler.
-:: Usage: schedule.bat
+:: Usage: schedule_windows_x86.bat
 :: ==============================================================================
 
 :: ==============================
 :: CONFIGURATION / CONSTANTS
 :: ==============================
-set "REL_PATH=..\Arazim Local\manager\run_binary.py"
+if defined ProgramFiles(x86) (
+    set "BASE_DIR=%ProgramFiles(x86)%"
+) else (
+    set "BASE_DIR=%ProgramFiles%"
+)
+set "ABS_SCRIPT_PATH=%BASE_DIR%\Arazim Local\manager\manager.py"
 set "INTERVAL=15"
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_NAME=%~n0"
@@ -19,8 +24,8 @@ set "LOG_FILE=%SCRIPT_DIR%%SCRIPT_NAME%.log"
 
 pushd "%SCRIPT_DIR%"
 :: Resolve absolute path to the script
-    if not exist "%REL_PATH%" (
-        echo Error: Script file not found at relative path: "%REL_PATH%"
+    if not exist "%ABS_PATH%" (
+        echo Error: Script file not found at relative path: "ABS_PATH%"
         popd
         exit /b 1
     )

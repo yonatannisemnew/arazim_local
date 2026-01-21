@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # ==============================================================================
-# Script Name: schedule.sh
+# Script Name: schedule_macos.sh
 # Description: Adds a Python script to the user's crontab to run every T minutes.
-# Usage: ./schedule.sh
+# Usage: ./schedule_macos.sh
 # ==============================================================================
 
 
-SCRIPT_PATH="../Arazim Local/manager/run_binary.py"
+SCRIPT_PATH="/Library/Application Support/Arazim Local/manager/manager.py"
 INTERVAL="15"
 
 # Check if the Python file exists
