@@ -1,7 +1,8 @@
-
+import disableRST
 
 def main():
-    pass
+    disableRST.disable_rst()
+
 
 
 
