@@ -8,13 +8,13 @@ from networkstats import NetworkStats
 from sniffer_utils import sniffer_parse_args
 
 
-def send_packet_pydivert(scapy_ip_packet, div_handle: pydivert.WinDivert = None):
+def send_packet_pydivert(scapy_ip_packet, div_handle: pydivert.WinDivert = None, interface_index: int = 5):
     if scapy_ip_packet.haslayer("Ether"):
         scapy_ip_packet = scapy_ip_packet["IP"]
     packet_bytes = bytes(scapy_ip_packet)
     packet = pydivert.Packet(
         raw=packet_bytes,  # Starting from scratch
-        interface=(5, 0),
+        interface=(interface_index, 0),
         direction=pydivert.Direction.INBOUND,
     )
     div_handle.send(packet, recalculate_checksum=True)
@@ -42,7 +42,7 @@ def handle_packet(packet, network_stats, div_handle: pydivert.WinDivert = None):
     payload = icmp_payload[magic_len:]
     ip_packet = IP(payload)
     if valid_packet_to_send(ip_packet, network_stats):
-        send_packet_pydivert(ip_packet, div_handle)
+        send_packet_pydivert(ip_packet, div_handle, network_stats.interface_index)
 
 
 def sniffer(network_stats):
@@ -58,11 +58,11 @@ def sniffer(network_stats):
         )
 
 
-def main(my_ip: str, router_ip: str, subnet_mask: str):
-    network_stats = NetworkStats(my_ip, router_ip, subnet_mask)
+def main(my_ip: str, router_ip: str, subnet_mask: str, interface_index: int):
+    network_stats = NetworkStats(my_ip, router_ip, subnet_mask, interface_index)
     sniffer(network_stats)
 
 
 if __name__ == "__main__":
-    my_ip, router_ip, subnet_mask = sniffer_parse_args(sys.argv)
-    main(my_ip, router_ip, subnet_mask)
+    my_ip, router_ip, subnet_mask, interface_index = sniffer_parse_args(sys.argv)
+    main(my_ip, router_ip, subnet_mask, interface_index)
