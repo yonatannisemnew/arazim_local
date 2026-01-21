@@ -90,7 +90,10 @@ def main():
         TARGET,
         OS_TO_INSTALLER_DICT[platform],
     )
-    subprocess.run([installer_path], shell=True)
+    if platform in [MAC_OS, LINUX_OS]:
+        subprocess.run(["/bin/bash", installer_path])
+    else:
+        subprocess.run([installer_path], shell=True)
 
 
 if __name__ == "__main__":
