@@ -11,8 +11,9 @@ if os.path.exists(result_file):
     os.remove(result_file)
 
 # Run the batch script
-subprocess.run(["sniffer_start.bat", "hello"], capture_output=False)
+subprocess.run(["sniffer_start.bat"], capture_output=False)
 
+subprocess.run(["arp_cacher.bat", "works!!!"], capture_output=False)
 # Read the result file
 try:
     with open(result_file, "r") as f:

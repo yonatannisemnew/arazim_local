@@ -2,8 +2,6 @@
 setlocal
 
 REM --- 1. Setup Paths ---
-if "%~1"=="" exit /b 1
-set "USER_ARG=%~1"
 set "HELPER=%~dp0net_helper.ps1"
 REM Define a specific path for the result file
 set "RESULT_FILE=%TEMP%\sniffer_result.json"
@@ -36,11 +34,8 @@ REM Cleanup helper
 del "%HELPER%"
 if "%MY_IP%"=="" exit /b 1
 
-REM --- 4. Run Python Side-Effect (Silent) ---
-python arp_cacher.py "%USER_ARG%" >nul 2>&1
 
-REM --- 5. WRITE TO FILE (The "Smart" Part) ---
-REM We manually construct a JSON-like list string.
+REM --- 4. WRITE TO FILE ---
 echo ["%MY_IP%", "%GATEWAY_IP%", "%SUBNET_MASK%", %IF_INDEX%] > "%RESULT_FILE%"
 
 REM We don't echo anything to stdout anymore.
