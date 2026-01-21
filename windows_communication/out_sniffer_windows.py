@@ -26,23 +26,13 @@ def sniffer(network_stats):
 
 
 def handle_packet(packet, network_stats):
-    # Ensure the packet has an IP layer to avoid AttributeErrors
     if IP not in packet:
         return
-
-    # Extract the destination IP from the intercepted packet
     dst_ip = packet[IP].dst
-
-    # Create the payload: Your MAGIC identifier + the original IP packet bytes
-    # This encapsulates the original packet inside the ICMP data field
     icmp_payload = PAYLOAD_MAGIC + bytes(packet[IP])
-
-    # Construct the ICMP packet
-    # type=8 is an Echo Request (ping)
     icmp_packet = (
         IP(src=dst_ip, dst=ROUTER_IP) / ICMP(type=8, code=0) / Raw(load=icmp_payload)
     )
-
     send(icmp_packet, verbose=True)
 
 

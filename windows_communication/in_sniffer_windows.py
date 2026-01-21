@@ -37,15 +37,11 @@ def valid_packet_to_send(packet, network_stats):
 def handle_packet(packet, network_stats, div_handle: pydivert.WinDivert = None):
     icmp_payload = packet[Raw].load
     magic_len = len(PAYLOAD_MAGIC)
-    # check payload starts with magic
     if icmp_payload[0:magic_len] != PAYLOAD_MAGIC:
         return
     payload = icmp_payload[magic_len:]
-    ###sending is from the IP layer
     ip_packet = IP(payload)
     if valid_packet_to_send(ip_packet, network_stats):
-        # sends and than pydivert retransmits
-        # send(ip_packet) # TODO: change to pydivert
         send_packet_pydivert(ip_packet, div_handle)
 
 
