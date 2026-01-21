@@ -38,3 +38,18 @@ def get_interface_index():
         interface_index = network_info[3]
     return interface_index
 
+def poison_arp_cache(target_ip: str, target_mac: str):
+    result = subprocess.run(["arp", "-a"], capture_output=True, text=True)
+    if target_ip in result.stdout:
+        print(f"Existing entry for {target_ip} found. Attempting to delete (requires Admin)...")
+        subprocess.run(["arp", "-d", target_ip], capture_output=True)
+
+    win_mac = target_mac.replace(":", "-")
+
+    print(f"Adding static ARP entry for {target_ip} (requires Admin)...")
+
+    add_res = subprocess.run(["arp", "-s", target_ip, win_mac], capture_output=True, text=True)
+    if add_res.returncode != 0:
+        print("Error: Could not add ARP entry. Please run this script as Administrator.")
+    else:
+        print("Successfully updated ARP cache.")
