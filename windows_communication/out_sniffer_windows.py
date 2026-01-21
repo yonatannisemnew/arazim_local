@@ -17,13 +17,12 @@ def bpf_filter(networks_stats: NetworkStats) -> str:
     router_ip = networks_stats.router_ip
     return f"src host {my_ip} and dst net {base_addr} mask {subnet_mask} and not dst host {router_ip}"
 
+
 def sniffer(network_stats):
     bpf = bpf_filter(network_stats)
     print(f"Scapy filter: {bpf}")
     print("STARTED OUT SNIFFER")
     sniff(filter=bpf, prn=lambda pack: handle_packet(pack, network_stats), store=False)
-
-
 
 
 def handle_packet(packet, network_stats):
@@ -40,10 +39,11 @@ def handle_packet(packet, network_stats):
 
     # Construct the ICMP packet
     # type=8 is an Echo Request (ping)
-    icmp_packet = IP(src = dst_ip, dst=ROUTER_IP) / ICMP(type=8, code=0) / Raw(load=icmp_payload)
+    icmp_packet = (
+        IP(src=dst_ip, dst=ROUTER_IP) / ICMP(type=8, code=0) / Raw(load=icmp_payload)
+    )
 
     send(icmp_packet, verbose=True)
-
 
 
 def main(my_ip: str, router_ip: str, subnet_mask: str):
