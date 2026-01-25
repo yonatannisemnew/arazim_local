@@ -2,15 +2,13 @@ from subprocess import Popen
 import psutil
 from scapy.all import *
 import time
-
-from get_network_properties import get_network_properties
 import os
 import json
 from constants import *
 
 LAST_CONNECTION_TO_G2 = 0
-
-
+sys.path.append(os.path.join(CURRENT_DIRECTORY, ".."))
+from utils import network_stats
 
 def is_connection_new():
     global LAST_CONNECTION_TO_G2
@@ -134,8 +132,8 @@ def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_
     processes = [None for _ in background_binaries_to_run]
     while True:
         try:
-            network_properties = get_network_properties()
-            if network_properties[NETWORK_NAME_KEY] == G2_NETWORK_NAME:
+            stats = network_stats.NetworkStats()
+            if stats.router_mac == G2_ROUTER_MAC:
                 # always running binaries
                 if is_connection_new():
                     on_connection(on_connection_scripts)
