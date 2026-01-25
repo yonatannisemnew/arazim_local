@@ -118,11 +118,11 @@ def kill_process(process):
     return None
 
 
-def once_first_connected():
-    server = find_server()
+def on_connection():
+    print("Connection to G2 network...")
 
 
-def once_first_disconnected():
+def on_disconnection():
     print("Disconnecting from G2 network...")  # placeholder for actual implementation
 
     
@@ -137,7 +137,7 @@ def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
             if network_properties[NETWORK_NAME_KEY] == G2_NETWORK_NAME:
                 ###always running binaries
                 if is_connection_new():
-                    once_first_connected()
+                    on_connection()
                 for i, binary_args in enumerate(backround_binaries_to_run):
                     processes[i] = watchdog(binary_args, processes[i])
                     print(
@@ -146,7 +146,7 @@ def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
             else:
                 #not in G2 logic
                 if is_disconnected_now_from_G2():
-                    once_first_disconnected()
+                    on_disconnection()
 
 
                 #kill all running sniffers

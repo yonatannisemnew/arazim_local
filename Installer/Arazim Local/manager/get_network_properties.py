@@ -1,7 +1,7 @@
 import subprocess
 import platform
 import psutil
-from scapy.all import get_if_addr, conf, socket
+from scapy.all import get_if_addr, conf, socket, getmacbyip
 from constants import *
 import re
 
@@ -19,8 +19,9 @@ def get_current_network_name():
                     return line.split(":")[1].strip()
 
         elif THIS_OS == MACOS:  # macOS
-            #TODO: change to checking the subnet!!!!!!
-            return "Building_G2"
+            gateway_ip = get_ip_and_def_device()[1]
+            gateway_mac = getmacbyip(gateway_ip)
+            return G2_NETWORK_NAME if gateway_mac == G2_ROUTER_MAC else "Other"
         
         elif THIS_OS == LINUX:
             # Query Linux nmcli

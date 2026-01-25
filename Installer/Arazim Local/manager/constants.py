@@ -23,9 +23,9 @@ MY_IP_KEY = "my_ip"
 ROUTER_IP_KEY = "router_ip"
 DEFAULT_DEVICE_KEY = "default_device"
 SUBNET_MASK_KEY = "subnet_mask"
+G2_ROUTER_MAC = "00:09:0f:09:00:1a"
 
-
-# Constant values for run_binary.py
+# Constant values for manager.py
 G2_NETWORK_NAME = "Building_G2"
 PROCESSES_ALREADY_RUNNING_MESSAGE = "Required processes are already running. Exiting."
 KEYBOARD_INTERRUPT_MESSAGE = "Execution interrupted by user."
