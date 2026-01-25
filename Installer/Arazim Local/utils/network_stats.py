@@ -7,12 +7,14 @@ import ipaddress
 
 class NetworkStats:
     def __init__(self):
-        
+        if os.geteuid() != 0:
+            sys.exit("Please run as root/sudo.")
         self.my_ip, self.router_ip, self.default_device = self._get_ips_and_def_device()
         self.subnet_mask = self._get_subnet_mask(self.router_ip)
         self.network = ipaddress.IPv4Network(f"{self.my_ip}/{self.subnet_mask}", strict=False)
         self.my_mac = self.get_my_mac(self.default_device)
         self.router_mac = self.get_router_mac(self.router_ip)
+        self.loopback_device = self.get_loopback_device()
 
     def in_subnet(self, ip_addr):
         return ipaddress.IPv4Address(ip_addr) in self.network
@@ -75,6 +77,15 @@ class NetworkStats:
                     return addr.netmask
         return None
     
+    def get_loopback_device(self):
+        interfaces = psutil.net_if_addrs()
+        # iterate through devices, check what has 127 and guess its the loopback
+        for iface, addrs in interfaces.items():
+            for addr in addrs:
+                if addr.family == socket.AF_INET and addr.address.startswith("127."):
+                    return iface
+        return None
+
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@ import argparse
 from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 from sniff_constants import PAYLOAD_MAGIC
+sys.path.append(os.path.join(os.path.dirmame(os.path.abspath(__file__)), "..", ".."))
+from utils import network_stats
 
 def real_subnet_to_our(ip, subnet_mask):
     # Split the strings into lists of octets
@@ -80,7 +82,7 @@ class OutSniffer:
             print("Error in encapsulate_and_send:", e)
 
 def main():
-    parser = argparse.ArgumentParser(description="Sniffs for packets in subnet from lo and injects into normal iface")
+    """parser = argparse.ArgumentParser(description="Sniffs for packets in subnet from lo and injects into normal iface")
     parser.add_argument("--our_ip", dest="our_ip", required=True,
                         help="our IP address to filter")
     parser.add_argument("--default_gateway", dest="default_gateway", required=True,
@@ -93,8 +95,9 @@ def main():
                         help="subnet like 172.16.164.0")
     parser.add_argument("--subnet_mask", dest="subnet_mask", required=True,
                         help="subnet mask like 255.255.255.0")
-    args = parser.parse_args()
-    sniffer = OutSniffer(args.subnet, args.subnet_mask, args.our_ip, args.main_iface, args.default_gateway,  args.lo_iface)
+    args = parser.parse_args()"""
+    stats = network_stats.NetworkStats()
+    sniffer = OutSniffer(stats.my_ip, stats.subnet_mask, stats.my_ip, stats.default_device, stats.router_ip, stats.loopback_device)
     sniffer.start_sniff()
 
 
