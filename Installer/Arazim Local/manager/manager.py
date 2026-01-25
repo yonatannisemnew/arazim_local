@@ -8,21 +8,25 @@ from constants import *
 
 LAST_CONNECTION_TO_G2 = 0
 sys.path.append(os.path.join(CURRENT_DIRECTORY, ".."))
-from utils import network_stats
+from utils import network_stats, premissions_stats
+
 
 def is_connection_new():
     global LAST_CONNECTION_TO_G2
-    current_time  = time.time()
+    current_time = time.time()
     if (current_time - LAST_CONNECTION_TO_G2) > (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1):
         LAST_CONNECTION_TO_G2 = current_time
         return True
     LAST_CONNECTION_TO_G2 = current_time
     return False
 
+
 def is_disconnected_now_from_G2():
     global LAST_CONNECTION_TO_G2
-    current_time  = time.time()
-    return (current_time - LAST_CONNECTION_TO_G2) < (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1)
+    current_time = time.time()
+    return (current_time - LAST_CONNECTION_TO_G2) < (
+        TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1
+    )
 
 
 def is_process_running_by_pid(pid, start_time=""):
@@ -46,13 +50,13 @@ def is_manager_running():
     with the current process's PID and time of execution and returns False.
     """
     pid = os.getpid()
-    with open(PATH_TO_RUNNING_BINARIES_FILE, 'r') as f:
+    with open(PATH_TO_RUNNING_BINARIES_FILE, "r") as f:
         data = f.read()
     if len(data) != 0:
         json_data = json.loads(data)
         running_pid = json_data.get("pid", [])
         start_time = json_data.get("start time", [])
-        #print(running_pid, start_time)
+        # print(running_pid, start_time)
         if is_process_running_by_pid(running_pid, start_time):
             return True
 
@@ -69,7 +73,7 @@ def is_subprocess_running(process):
     :param process: the current running process
     :return: True if there is a process running, False otherwise
     """
-    #print(process)
+    # print(process)
     if process is None:
         return False
     if process.poll() is not None:
@@ -124,8 +128,15 @@ def on_connection(on_connection_scripts):
 def on_disconnection(on_disconnection_scripts):
     for args in on_disconnection_scripts:
         Popen(args)
-    
-def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_scripts, network_name=G2_NETWORK_NAME):
+
+
+def main(
+    t,
+    background_binaries_to_run,
+    on_connection_scripts,
+    on_disconnection_scripts,
+    network_name=G2_NETWORK_NAME,
+):
     if is_manager_running():
         print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
@@ -143,12 +154,11 @@ def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_
                         f"Process {i}: PID {processes[i].pid if processes[i] else 'None'}"
                     )
             else:
-                #not in G2 logic
+                # not in G2 logic
                 if is_disconnected_now_from_G2():
                     on_disconnection(on_disconnection_scripts)
 
-
-                #kill all running sniffers
+                # kill all running sniffers
                 for i, process in enumerate(processes):
                     processes[i] = kill_process(process)
             time.sleep(t)
@@ -162,6 +172,15 @@ def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_
             print(f"An error occurred: {ex}")
 
 
+def root_check():
+    pass
+
+
 if __name__ == "__main__":
-    main(TIME_INTERVAL_BETWEEN_CHECKS, BACKGROUND_BINARIES_TO_RUN, 
-         ON_CONNECTION_SCRIPTS, ON_DISCONNECTION_SCRIPTS)
+    premissions_stats.root_check()
+    main(
+        TIME_INTERVAL_BETWEEN_CHECKS,
+        BACKGROUND_BINARIES_TO_RUN,
+        ON_CONNECTION_SCRIPTS,
+        ON_DISCONNECTION_SCRIPTS,
+    )
