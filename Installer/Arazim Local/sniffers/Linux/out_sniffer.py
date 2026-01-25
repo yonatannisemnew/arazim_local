@@ -5,7 +5,7 @@ import argparse
 from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 from sniff_constants import PAYLOAD_MAGIC
-sys.path.append(os.path.join(os.path.dirmame(os.path.abspath(__file__)), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils import network_stats
 
 def real_subnet_to_our(ip, subnet_mask):
