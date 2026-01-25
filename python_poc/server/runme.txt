@@ -1,0 +1,2 @@
+sudo python3 python_poc/server/in_sniffer.py --our_ip 172.16.164.200 --default_gateway 172.16.164.254 --main_iface wlo1 --lo_iface lo  --subnet 172.16.164.254 --subnet_mask 255.255.254.0
+sudo python3 python_poc/server/out_sniffer.py --our_ip 172.16.164.200 --default_gateway 172.16.164.254 --main_iface wlo1 --lo_iface lo --subnet 172.16.164.254 --subnet_mask 255.255.254.0
