@@ -164,6 +164,7 @@ def main(
             for process in processes:
                 if process:
                     process.kill()
+            on_disconnection(on_disconnection_scripts)
             break
         except Exception as ex:
             print(f"An error occurred: {ex}")
