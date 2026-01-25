@@ -5,7 +5,9 @@ This module contains constant values used throughout the manager directory.
 
 import sys
 import os
+import platform
 
+THIS_OS = platform.system()
 # Constant values for get_network_properties.py
 WINDOWS = "Windows"
 LINUX = "Linux"
@@ -45,8 +47,8 @@ is the binary path and the elements after are its arguments
 """
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 BACKGROUND_BINARIES_TO_RUN = [
-    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", "in_sniffer.py")],
-    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", "out_sniffer.py")],
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", THIS_OS, "in_sniffer.py")],
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", THIS_OS, "out_sniffer.py")],
 ]
 
 TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds

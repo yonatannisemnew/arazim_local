@@ -7,9 +7,9 @@ import re
 
 def get_current_network_name():
     try:
-        os_name = platform.system()
+        THIS_OS = platform.system()
 
-        if os_name == WINDOWS:
+        if THIS_OS == WINDOWS:
             # Query Windows netsh
             output = subprocess.check_output(
                 ["netsh", "wlan", "show", "interfaces"]
@@ -18,11 +18,11 @@ def get_current_network_name():
                 if "SSID" in line and "BSSID" not in line:
                     return line.split(":")[1].strip()
 
-        elif os_name == MACOS:  # macOS
+        elif THIS_OS == MACOS:  # macOS
             #TODO: change to checking the subnet!!!!!!
             return "Building_G2"
         
-        elif os_name == LINUX:
+        elif THIS_OS == LINUX:
             # Query Linux nmcli
             output = subprocess.check_output(
                 ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"]
