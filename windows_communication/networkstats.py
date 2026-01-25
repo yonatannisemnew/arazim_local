@@ -2,6 +2,7 @@ import subprocess
 import platform
 import psutil
 from scapy.all import *
+from constants import *
 import ipaddress
 
 
@@ -14,7 +15,6 @@ class NetworkStats:
         )
         self.my_mac = self.get_my_mac(self.default_device)
         self.router_mac = self.get_router_mac(self.router_ip)
-        self.loopback_device = self.get_loopback_device()
 
     def in_subnet(self, ip_addr):
         return ipaddress.IPv4Address(ip_addr) in self.network
@@ -28,7 +28,6 @@ class NetworkStats:
         eth = Ether(dst="ff:ff:ff:ff:ff:ff")
         # Create an ARP request for the router's IP
         arp = ARP(pdst=self.router_ip)
-
         # Stack them and send/receive (srp)
         ans, unans = srp(eth / arp, timeout=2, verbose=False)
 
@@ -75,15 +74,6 @@ class NetworkStats:
             for addr in addresses:
                 if addr.address == local_ip:
                     return addr.netmask
-        return None
-
-    def get_loopback_device(self):
-        interfaces = psutil.net_if_addrs()
-        # iterate through devices, check what has 127 and guess its the loopback
-        for iface, addrs in interfaces.items():
-            for addr in addrs:
-                if addr.family == socket.AF_INET and addr.address.startswith("127."):
-                    return iface
         return None
 
 

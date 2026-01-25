@@ -1,11 +1,11 @@
+import ipaddress
 import sys
+from constants import *
+from scapy.all import *
 from scapy.all import IP, Raw, conf
 import pydivert
-import os
-
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-from utils.network_stats import *
-from manager.constants import *
+from networkstats import NetworkStats
+from sniffer_utils import sniffer_parse_args
 
 
 def get_interface_index():
