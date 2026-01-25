@@ -13,3 +13,6 @@ def enable_rst():
         "-p tcp --tcp-flags RST RST -j DROP"
     )
     subprocess.run(enable_send, shell=True, check=True)
+
+def on_connect():
+    enable_rst()

@@ -51,6 +51,14 @@ BACKGROUND_BINARIES_TO_RUN = [
     [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "sniffers", THIS_OS, "out_sniffer.py")],
 ]
 
+ON_CONNECTION_SCRIPTS = [
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "on_connection", THIS_OS, "on_connection.py")]
+]
+
+ON_DISCONNECTION_SCRIPTS = [
+    [PYTHON_BINARY, os.path.join(CURRENT_DIRECTORY, "..", "on_disconnection", THIS_OS, "on_disconnection.py")]
+]
+
 TIME_INTERVAL_BETWEEN_CHECKS = 2  # time interval in seconds
 PATH_TO_RUNNING_BINARIES_FILE = os.path.join(CURRENT_DIRECTORY, "current_running_binaries.json")
 PID_KEY = "pid"

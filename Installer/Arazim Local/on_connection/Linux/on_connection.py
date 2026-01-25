@@ -1,7 +1,7 @@
 import subprocess
 
 def disable_rst():
-
+    #TODO: change to non constant subnet
     disable_recv = ("sudo iptables -A OUTPUT "
     "-p tcp --tcp-flags RST RST "
     "-d 127.16.164.0/23 -j DROP"
@@ -13,3 +13,6 @@ def disable_rst():
     "-p tcp --tcp-flags RST RST -j DROP"
     )
     subprocess.run(disable_send, shell=True, check=True)
+
+if __name__ == "__main__":
+    disable_rst()

@@ -118,27 +118,28 @@ def kill_process(process):
     return None
 
 
-def on_connection():
-    print("Connection to G2 network...")
+def on_connection(on_connection_scripts):
+    for args in on_connection_scripts:
+        Popen(args)
 
 
-def on_disconnection():
-    print("Disconnecting from G2 network...")  # placeholder for actual implementation
-
+def on_disconnection(on_disconnection_scripts):
+    for args in on_disconnection_scripts:
+        Popen(args)
     
-def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
+def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_scripts, network_name=G2_NETWORK_NAME):
     if is_manager_running():
         print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
-    processes = [None for _ in backround_binaries_to_run]
+    processes = [None for _ in background_binaries_to_run]
     while True:
         try:
             network_properties = get_network_properties()
             if network_properties[NETWORK_NAME_KEY] == G2_NETWORK_NAME:
-                ###always running binaries
+                # always running binaries
                 if is_connection_new():
-                    on_connection()
-                for i, binary_args in enumerate(backround_binaries_to_run):
+                    on_connection(on_connection_scripts)
+                for i, binary_args in enumerate(background_binaries_to_run):
                     processes[i] = watchdog(binary_args, processes[i])
                     print(
                         f"Process {i}: PID {processes[i].pid if processes[i] else 'None'}"
@@ -146,7 +147,7 @@ def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
             else:
                 #not in G2 logic
                 if is_disconnected_now_from_G2():
-                    on_disconnection()
+                    on_disconnection(on_disconnection_scripts)
 
 
                 #kill all running sniffers
@@ -164,4 +165,5 @@ def main(backround_binaries_to_run, t, network_name=G2_NETWORK_NAME):
 
 
 if __name__ == "__main__":
-    main(BACKGROUND_BINARIES_TO_RUN, TIME_INTERVAL_BETWEEN_CHECKS)
+    main(TIME_INTERVAL_BETWEEN_CHECKS, BACKGROUND_BINARIES_TO_RUN, 
+         ON_CONNECTION_SCRIPTS, ON_DISCONNECTION_SCRIPTS)

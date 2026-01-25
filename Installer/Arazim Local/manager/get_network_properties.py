@@ -3,7 +3,6 @@ import platform
 import psutil
 from scapy.all import get_if_addr, conf, socket, getmacbyip
 from constants import *
-import re
 
 def get_current_network_name():
     try:
