@@ -139,9 +139,6 @@ def main(t, background_binaries_to_run, on_connection_scripts, on_disconnection_
                     on_connection(on_connection_scripts)
                 for i, binary_args in enumerate(background_binaries_to_run):
                     processes[i] = watchdog(binary_args, processes[i])
-                    print(
-                        f"Process {i}: PID {processes[i].pid if processes[i] else 'None'}"
-                    )
             else:
                 #not in G2 logic
                 if is_disconnected_now_from_G2():
