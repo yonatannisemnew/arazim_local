@@ -120,14 +120,10 @@ def kill_process(process):
     return None
 
 
-def on_connection(on_connection_scripts):
-    for args in on_connection_scripts:
+def run_binaries(binaries):
+    for args in binaries:
         Popen(args)
 
-
-def on_disconnection(on_disconnection_scripts):
-    for args in on_disconnection_scripts:
-        Popen(args)
 
 
 def main(
@@ -147,13 +143,13 @@ def main(
             if stats.router_mac == G2_ROUTER_MAC:
                 # always running binaries
                 if is_connection_new():
-                    on_connection(on_connection_scripts)
+                    run_binaries(on_connection_scripts)
                 for i, binary_args in enumerate(background_binaries_to_run):
                     processes[i] = watchdog(binary_args, processes[i])
             else:
                 # not in G2 logic
                 if is_disconnected_now_from_G2():
-                    on_disconnection(on_disconnection_scripts)
+                    run_binaries(on_disconnection_scripts)
 
                 # kill all running sniffers
                 for i, process in enumerate(processes):
@@ -164,7 +160,7 @@ def main(
             for process in processes:
                 if process:
                     process.kill()
-            on_disconnection(on_disconnection_scripts)
+            run_binaries(on_disconnection_scripts)
             break
         except Exception as ex:
             print(f"An error occurred: {ex}")
