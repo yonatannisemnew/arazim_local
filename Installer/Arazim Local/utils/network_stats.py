@@ -8,7 +8,9 @@ import ipaddress
 class NetworkStats:
     def __init__(self):
         try:
-            self.my_ip, self.router_ip, self.default_device = self._get_ips_and_def_device()
+            self.my_ip, self.router_ip, self.default_device = (
+                self._get_ips_and_def_device()
+            )
             self.subnet_mask = self._get_subnet_mask(self.router_ip)
             self.network = ipaddress.IPv4Network(
                 f"{self.my_ip}/{self.subnet_mask}", strict=False
@@ -16,9 +18,12 @@ class NetworkStats:
             self.my_mac = self.get_my_mac(self.default_device)
             self.router_mac = self.get_router_mac(self.router_ip)
             self.loopback_device = self.get_loopback_device()
+            # check everything is initialized and not None
+            if any(value is None for value in self.__dict__.values()):
+                raise ValueError("One or more network attributes failed to initialize.")
+
         except Exception:
-            self.my_ip, self.router_ip, self.default_device, self.subnet_mask, \
-            self.network, self.my_mac, self.router_mac, self.loopback_device = (None,) * 8
+            return None
 
     def in_subnet(self, ip_addr):
         return ipaddress.IPv4Address(ip_addr) in self.network

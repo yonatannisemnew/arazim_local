@@ -5,13 +5,15 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils.network_stats import *
-
-PAYLOAD_MAGIC = b"sxsvn"
+from sniffers.constants import *
 
 
 def get_interface_index():
-    default_interface = conf.route.route("8.8.8.8")[0]
-    return conf.ifaces[default_interface].index
+    try:
+        default_interface = conf.route.route("8.8.8.8")[0]
+        return conf.ifaces[default_interface].index
+    except:
+        return None
 
 
 def send_packet_pydivert(
@@ -71,6 +73,9 @@ def sniffer(network_stats):
 
 def main():
     network_stats = NetworkStats()
+    if network_stats is None:
+        print("network stats is not initialized!")
+        exit(1)
     sniffer(network_stats)
 
 
