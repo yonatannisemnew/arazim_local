@@ -3,12 +3,22 @@ import ipaddress
 from scapy.layers.inet import IP, ICMP
 from typing import Iterable
 
-
 MY_IP = get_if_addr(conf.iface)
 DEFAULT_GATEWAY = conf.route.route("0.0.0.0")[2]
 QUERY_IDENTIFIER = b"nif_local_salta_8223"
 RESPONSE_IDENTIFIER = b"NOT_EZ_GIMEL_SHTAIM"
 
+from python_hosts import Hosts, HostsEntry
+
+def add_to_hosts_file(ip, hostname):
+    hosts = Hosts()
+    new_entry = HostsEntry(entry_type='ipv4', address=ip, names=[hostname])
+    hosts.add([new_entry])
+    try:
+        hosts.write()
+        print(f"[+] {hostname} pointed to {ip}")
+    except PermissionError:
+        print("[!] Run as sudo to modify hosts.")
 
 def xor(data, key):
     return bytes([a ^ b for a, b in zip(data, key * (len(data) // len(key) + 1))])
