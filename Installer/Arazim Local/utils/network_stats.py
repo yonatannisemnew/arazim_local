@@ -7,14 +7,18 @@ import ipaddress
 
 class NetworkStats:
     def __init__(self):
-        self.my_ip, self.router_ip, self.default_device = self._get_ips_and_def_device()
-        self.subnet_mask = self._get_subnet_mask(self.router_ip)
-        self.network = ipaddress.IPv4Network(
-            f"{self.my_ip}/{self.subnet_mask}", strict=False
-        )
-        self.my_mac = self.get_my_mac(self.default_device)
-        self.router_mac = self.get_router_mac(self.router_ip)
-        self.loopback_device = self.get_loopback_device()
+        try:
+            self.my_ip, self.router_ip, self.default_device = self._get_ips_and_def_device()
+            self.subnet_mask = self._get_subnet_mask(self.router_ip)
+            self.network = ipaddress.IPv4Network(
+                f"{self.my_ip}/{self.subnet_mask}", strict=False
+            )
+            self.my_mac = self.get_my_mac(self.default_device)
+            self.router_mac = self.get_router_mac(self.router_ip)
+            self.loopback_device = self.get_loopback_device()
+        except Exception:
+            self.my_ip, self.router_ip, self.default_device, self.subnet_mask, \
+            self.network, self.my_mac, self.router_mac, self.loopback_device = (None,) * 8
 
     def in_subnet(self, ip_addr):
         return ipaddress.IPv4Address(ip_addr) in self.network
@@ -62,13 +66,9 @@ class NetworkStats:
     def _get_subnet_mask(self, router_ip):
         # get subnet mask
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect((router_ip, 1))
-            local_ip = s.getsockname()[0]
-        except Exception as e:
-            return f"Error connecting to router: {e}"
-        finally:
-            s.close()
+        s.connect((router_ip, 1))
+        local_ip = s.getsockname()[0]
+        s.close()
 
         interfaces = psutil.net_if_addrs()
         for _, addresses in interfaces.items():

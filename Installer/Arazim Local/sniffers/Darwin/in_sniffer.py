@@ -4,11 +4,9 @@ import argparse
 from scapy.all import sniff, send, Raw, conf,L3RawSocket
 from scapy.layers.inet import IP, TCP
 from sniff_constants import PAYLOAD_MAGIC 
-
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils import network_stats
 
-conf.L3socket = L3RawSocket
 def real_ip_to_local(ip):
     ind = ip.find(".")
     if ind == -1:
@@ -40,7 +38,6 @@ class Sniffer:
                 return
             #get the raw, without magic (og packet)
             decapsulated = IP(pkt[Raw].load[len(PAYLOAD_MAGIC):])
-            decapsulated.show()
             #change src and dst to allow sending in lo
             decapsulated[IP].src = real_ip_to_local(decapsulated[IP].src)
 
@@ -49,16 +46,14 @@ class Sniffer:
             del decapsulated[IP].chksum
             del decapsulated[IP].len
             if TCP in decapsulated:
-                print("hi")
                 del decapsulated[TCP].chksum
-            decapsulated.show()
             send(decapsulated, verbose=0, iface=self.lo_iface)
         except Exception as e:
-            print(e)
+            print("in sniffer error", e)
 
 def main():
-    parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
-    """parser.add_argument("--our_ip", dest="our_ip", required=True,
+    """parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
+    parser.add_argument("--our_ip", dest="our_ip", required=True,
                         help="our IP address to filter")
     parser.add_argument("--default_gateway", dest="default_gateway", required=True,
                         help="Expected source of captured packets")

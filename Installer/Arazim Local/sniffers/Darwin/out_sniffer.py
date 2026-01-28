@@ -1,7 +1,7 @@
 import os
 import sys
 import argparse
-
+import ipaddress
 from scapy.all import  sniff, send
 from scapy.layers.inet import IP, TCP, ICMP
 from sniff_constants import PAYLOAD_MAGIC
@@ -50,27 +50,27 @@ class OutSniffer:
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
         fake_subnet = real_subnet_to_our(target_subnet, self.target_subnet_mask)
-        self.bpf_filter = (
-            f"dst net {fake_subnet} mask {self.target_subnet_mask} "
-            f"and ( src {self.my_ip} "
-            f"or src 127.0.0.1) "
-        )
-        print(f"Using BPF filter: {self.bpf_filter}")
+        self.target_network = ipaddress.ip_network(f"{fake_subnet}/{self.target_subnet_mask}", strict=False)
 
 
     def start_sniff(self):
-        sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
+        sniff(iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
 
 
     def encapsulate_and_send(self, pkt):
         try:
             if IP not in pkt:
                 return
+            if pkt[IP].src != "127.0.0.1":
+                return
+            if ipaddress.ip_address(pkt[IP].dst) not in self.target_network:
+                return
             # #deleting the checksum to force recalculation
             # del pkt[IP].chksum
             # del pkt[TCP].chksum
             #adding into icmp payload, with magic
             pkt[IP].src = self.my_ip
+            pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
             original_dst = local_ip_to_real(pkt[IP].dst, self.my_ip)

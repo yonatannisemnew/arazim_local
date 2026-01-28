@@ -71,6 +71,7 @@ class OutSniffer:
             # del pkt[TCP].chksum
             #adding into icmp payload, with magic
             pkt[IP].src = self.my_ip
+            pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
             original_dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
