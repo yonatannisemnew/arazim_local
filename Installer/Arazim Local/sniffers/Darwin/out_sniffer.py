@@ -2,7 +2,7 @@ import os
 import sys
 import ipaddress
 from scapy.all import  sniff, send
-from scapy.layers.inet import IP, ICMP
+from scapy.layers.inet import IP, ICMP, fragment
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from sniffers.constants import PAYLOAD_MAGIC
 from utils import network_stats
@@ -70,7 +70,8 @@ class OutSniffer:
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
             wrapper_pkt = IP(dst=self.default_gateway, src=pkt[IP].dst) / ICMP(type=8) / payload
-            send(wrapper_pkt, verbose=0, iface=self.network_interface)
+            for f in fragment(wrapper_pkt):
+                send(f, verbose=0, iface=self.network_interface)
 
         except Exception as e:
             print("Error in encapsulate_and_send:", e)
