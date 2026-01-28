@@ -1,5 +1,6 @@
 import sys
 
+
 def find_path():
     # --- Linux Logic ---
     if sys.platform.startswith("linux"):
@@ -24,10 +25,10 @@ def replace_domain_ip(domain: str, ip: str, file_path: str):
         f.write(f"{ip} {domain}\n")
         f.close()
 
+
 def insert_to_hosts(domain: str, ip: str):
     replace_domain_ip(domain, ip, find_path())
 
 
 # if __name__ == '__main__':
 #     insert_to_hosts("arazimloc.com", "146.190.62.39")
-

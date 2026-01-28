@@ -4,13 +4,14 @@ import os
 
 def initialize_cache(ip_addresses: list[str], file_path: str) -> None:
     if os.path.exists(file_path):
-        return 
+        return
 
     data = {ip: 0 for ip in ip_addresses}
     data["current"] = ip_addresses[0] if ip_addresses else None
 
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         json.dump(data, f, indent=4)
+
 
 def clear_cache(file_path: str) -> None:
     if os.path.exists(file_path):
@@ -18,7 +19,7 @@ def clear_cache(file_path: str) -> None:
 
 
 def update_cache_entry(ip: str, file_path: str) -> None:
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         data = json.load(f)
 
     if ip in data:
@@ -28,12 +29,12 @@ def update_cache_entry(ip: str, file_path: str) -> None:
         data[ip] = 1
         data["current"] = ip
 
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         json.dump(data, f, indent=4)
 
 
 def cache_to_iterator(file_path: str):
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         data = json.load(f)
 
     # 1. Yield 'current' first if it exists (Highest Priority)
