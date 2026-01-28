@@ -5,11 +5,11 @@ SUBNET = "127.16.164.0/23"
 def add_subnet_to_loopback():
     cmd = (
         "for i in {1..254}; do "
-        "sudo ifconfig lo0 alias 127.16.164.$i; "
-        "sudo ifconfig lo0 alias 127.16.165.$i; "
+        "sudo ifconfig lo0 alias 127.16.164.$i; netmask 0xffffffff anycast"
+        "sudo ifconfig lo0 alias 127.16.165.$i; netmask 0xffffffff anycast"
         "done"
     )
-    subprocess.run(cmd, shell=True, check=True)
+    subprocess.run(cmd, shell=True, executable="/bin/bash")
 
 def disable_rst():
     rules = (

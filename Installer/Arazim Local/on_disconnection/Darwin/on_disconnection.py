@@ -7,8 +7,7 @@ def remove_subnet_from_loopback():
         "sudo ifconfig lo0 -alias 127.16.165.$i 2>/dev/null; "
         "done"
     )
-    subprocess.run(cmd, shell=True, check=True)
-
+    subprocess.run(cmd, shell=True, executable="/bin/bash")
 def enable_rst():
     try:
         subprocess.run("sudo pfctl -f /etc/pf.conf", shell=True, check=True)
