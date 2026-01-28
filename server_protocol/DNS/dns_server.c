@@ -222,10 +222,7 @@ int create_dns_response(const u_char *request, u_char *response, int *response_s
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Usage: %s <interface>\n", argv[0]);
-        return 1;
-    }
-    start_dns_server(argv[1]);
+    printf("starting dns server!\n");
+    start_dns_server(INTERFACE);
     return 0;
 }
