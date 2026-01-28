@@ -4,36 +4,7 @@ import shutil
 import subprocess
 import platform
 import ctypes
-
-# constants
-PROGRAM_FILES_X86 = os.environ.get("PROGRAMFILES(X86)") or "C:\\Program Files (x86)"
-PROGRAM_FILES_X64 = os.environ.get("PROGRAMFILES") or "C:\\Program Files"
-PROGRAM_FILES_MAC = "/Applications"
-PROGRAM_FILES_LINUX = "/usr/bin"
-WINDOWS_X64 = "windows_x64"
-WINDOWS_X86 = "windows_x86"
-MAC_OS = "macos"
-LINUX_OS = "linux"
-UNKNOWN_OS = "unknown"
-TARGET = "Target"
-SRC_MANAGER_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(os.path.join("Arazim Local", "manager")))
-)
-OS_TO_PROGRAM_FILES_DICT = {
-    WINDOWS_X64: PROGRAM_FILES_X64,
-    WINDOWS_X86: PROGRAM_FILES_X86,
-    MAC_OS: PROGRAM_FILES_MAC,
-    LINUX_OS: PROGRAM_FILES_LINUX,
-}
-REL_SCHEDULE_BAT_PATH = "schedule.bat"
-REL_SCHEDULE_SH_PATH = "schedule.sh"
-RUN_SCRIPT_LINUX = "/bin/bash"
-OS_TO_INSTALLER_DICT = {
-    WINDOWS_X64: "installer_windows_x64.bat",
-    WINDOWS_X86: "installer_windows_x86.bat",
-    MAC_OS: "installer_macos.sh",
-    LINUX_OS: "installer_linux.sh",
-}
+from constants import *
 
 
 def is_admin():
@@ -78,19 +49,109 @@ def get_platform():
         return UNKNOWN_OS
 
 
+def set_program_dir(platform):
+    if platform not in OS_TO_PROGRAM_FILES:
+        print("not supported platform")
+        exit(1)
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    arazim_local_dir = os.path.join(current_dir, "Arazim Local")
+
+    # --- THIS IS THE CRITICAL CHANGE ---
+    # We take "C:\Program Files" and turn it into "C:\Program Files\Arazim Local"
+    target_dir = os.path.join(OS_TO_PROGRAM_FILES[platform], "Arazim Local")
+    # -----------------------------------
+
+    try:
+        print(f"Source: {arazim_local_dir}")
+        print(f"Target: {target_dir}")
+
+        # Now it will create the "Arazim Local" folder inside Program Files
+        shutil.copytree(arazim_local_dir, target_dir, dirs_exist_ok=True)
+        print("Copy Successful!")
+    except Exception as e:
+        print(f"unable to copy ARAZIM LOCAL dir!!! Error: {e}")
+        exit(-1)
+
+
+import subprocess
+import platform
+import os
+import sys
+from constants import *
+
+
+def add_scheduling(platform_type):
+    """
+    Directly schedules the manager script to run every X minutes
+    without external batch or shell scripts.
+    """
+    # 1. Resolve the permanent path to the manager
+    permanent_dir = os.path.join(OS_TO_PROGRAM_FILES[platform_type], "Arazim Local")
+    manager_path = os.path.join(permanent_dir, "manager", "manager.py")
+
+    # Use the current python executable to ensure we use the same environment
+    python_exe = sys.executable
+    interval = str(DURATION)  # Assuming DURATION is 15
+
+    print(f"Scheduling {manager_path} to run every {interval} minutes...")
+
+    try:
+        if platform_type in [WINDOWS_X64, WINDOWS_X86]:
+            # --- WINDOWS: schtasks ---
+            # /f = force (overwrite), /rl highest = Admin privileges
+            # We use triple quotes to handle spaces in Program Files
+            cmd = [
+                "schtasks",
+                "/create",
+                "/tn",
+                "ArazimLocalTask",
+                "/tr",
+                f'"{python_exe}" "{manager_path}"',
+                "/sc",
+                "minute",
+                "/mo",
+                interval,
+                "/rl",
+                "highest",
+                "/f",
+            ]
+            subprocess.run(cmd, check=True)
+
+        elif platform_type in [LINUX_OS, MAC_OS]:
+            # --- LINUX/MAC: Crontab ---
+            # Cron format: */15 * * * * command
+            cron_job = f"*/{interval} * * * * {python_exe} {manager_path}\n"
+
+            # Get current crontab, append new job, and reload
+            # This avoids overwriting existing user cron jobs
+            current_cron = subprocess.run(
+                ["crontab", "-l"], capture_output=True, text=True
+            ).stdout
+
+            if manager_path not in current_cron:
+                new_cron = current_cron + cron_job
+                process = subprocess.Popen(["crontab", "-"], stdin=subprocess.PIPE)
+                process.communicate(input=new_cron.encode())
+            else:
+                print("Task already exists in crontab.")
+
+        print("Scheduling successfully established.")
+
+    except Exception as e:
+        print(f"CRITICAL ERROR: Could not create scheduled task. {e}")
+        sys.exit(1)
+
+
 def main():
     run_as_admin()
     platform = get_platform()
-    if platform == UNKNOWN_OS or platform not in OS_TO_INSTALLER_DICT:
+    if platform == UNKNOWN_OS:
         print("Unsupported operating system.")
-        return
+        exit(1)
     print(f"Detected platform: {platform}")
-    installer_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        TARGET,
-        OS_TO_INSTALLER_DICT[platform],
-    )
-    subprocess.run([installer_path], shell=True)
+    set_program_dir(platform)
+    add_scheduling(platform)
 
 
 if __name__ == "__main__":
