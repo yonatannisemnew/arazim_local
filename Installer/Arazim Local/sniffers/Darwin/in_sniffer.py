@@ -1,10 +1,10 @@
 import sys
 import os
-import argparse
-from scapy.all import sniff, send, Raw, conf,L3RawSocket
+from scapy.all import sniff, send, Raw
 from scapy.layers.inet import IP, TCP
-from sniff_constants import PAYLOAD_MAGIC 
+
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+from sniffers.constants import PAYLOAD_MAGIC
 from utils import network_stats
 
 def real_ip_to_local(ip):
@@ -52,21 +52,10 @@ class Sniffer:
             print("in sniffer error", e)
 
 def main():
-    """parser = argparse.ArgumentParser(description="Sniffs for ICMP, if its correct magic, injects into lo")
-    parser.add_argument("--our_ip", dest="our_ip", required=True,
-                        help="our IP address to filter")
-    parser.add_argument("--default_gateway", dest="default_gateway", required=True,
-                        help="Expected source of captured packets")
-    parser.add_argument("--main_iface", dest="main_iface", required=True,
-                        help="Network interface to sniff/send packets on")
-    parser.add_argument("--lo_iface", dest="lo_iface", required=True,
-                        help="Network interface to send on (loopback)")
-    parser.add_argument("--subnet", dest="subnet", required=True,
-                        help="subnet like 172.16.164.0")
-    parser.add_argument("--subnet_mask", dest="subnet_mask", required=True,
-                        help="subnet mask like 255.255.255.0")
-    args = parser.parse_args()"""
     stats = network_stats.NetworkStats()
+    if stats is None:
+        print("Networks stats failed, closing sniffer")
+        exit(0)
     in_sniffer = Sniffer(stats.my_ip, stats.router_ip, stats.default_device, stats.loopback_device)
     in_sniffer.start_sniff()
     

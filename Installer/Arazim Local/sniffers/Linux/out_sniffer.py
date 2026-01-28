@@ -1,11 +1,11 @@
 import os
 import sys
-import argparse
 
 from scapy.all import  sniff, send
-from scapy.layers.inet import IP, TCP, ICMP
-from sniff_constants import PAYLOAD_MAGIC
+from scapy.layers.inet import IP, ICMP
+
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+from sniffers.constants import PAYLOAD_MAGIC
 from utils import network_stats
 
 def real_subnet_to_our(ip, subnet_mask):
@@ -66,38 +66,22 @@ class OutSniffer:
         try:
             if IP not in pkt:
                 return
-            # #deleting the checksum to force recalculation
-            # del pkt[IP].chksum
-            # del pkt[TCP].chksum
             #adding into icmp payload, with magic
             pkt[IP].src = self.my_ip
             pkt[IP].dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
-            original_dst = local_ip_to_real(pkt[IP].dst, self.my_ip)
-            tunnel_pkt = IP(dst=self.default_gateway, src=original_dst) / ICMP(type=8) / payload
-            #tunnel_pkt.show()
-            send(tunnel_pkt, verbose=0, iface=self.network_interface)
+            wrapper_pkt = IP(dst=self.default_gateway, src=pkt[IP].dst) / ICMP(type=8) / payload
+            send(wrapper_pkt, verbose=0, iface=self.network_interface)
 
         except Exception as e:
             print("Error in encapsulate_and_send:", e)
 
 def main():
-    """parser = argparse.ArgumentParser(description="Sniffs for packets in subnet from lo and injects into normal iface")
-    parser.add_argument("--our_ip", dest="our_ip", required=True,
-                        help="our IP address to filter")
-    parser.add_argument("--default_gateway", dest="default_gateway", required=True,
-                        help="Expected source of captured packets")
-    parser.add_argument("--main_iface", dest="main_iface", required=True,
-                        help="Network interface to sniff on")
-    parser.add_argument("--lo_iface", dest="lo_iface", required=True,
-                        help="Network interface to send on (loopback)")
-    parser.add_argument("--subnet", dest="subnet", required=True,
-                        help="subnet like 172.16.164.0")
-    parser.add_argument("--subnet_mask", dest="subnet_mask", required=True,
-                        help="subnet mask like 255.255.255.0")
-    args = parser.parse_args()"""
     stats = network_stats.NetworkStats()
+    if stats is None:
+        print("Networks stats failed, closing sniffer")
+        exit(0)
     sniffer = OutSniffer(stats.my_ip, stats.subnet_mask, stats.my_ip, stats.default_device, stats.router_ip, stats.loopback_device)
     sniffer.start_sniff()
 
