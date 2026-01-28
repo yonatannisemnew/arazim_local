@@ -131,7 +131,7 @@ def main(
     background_binaries_to_run,
     on_connection_scripts,
     on_disconnection_scripts,
-    dns_scripts
+    dns_scripts,
     network_name=G2_NETWORK_NAME,
 ):
     if is_manager_running():
@@ -150,6 +150,7 @@ def main(
                     processes[i] = watchdog(binary_args, processes[i])
                 if new_connection:
                     run_binaries(dns_scripts)
+
             else:
                 # not in G2 logic
                 if is_disconnected_now_from_G2():
