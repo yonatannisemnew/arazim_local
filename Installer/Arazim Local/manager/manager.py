@@ -158,8 +158,7 @@ def main(
         except KeyboardInterrupt:
             print(KEYBOARD_INTERRUPT_MESSAGE)
             for process in processes:
-                if process:
-                    process.kill()
+                kill_process
             run_binaries(on_disconnection_scripts)
             break
         except Exception as ex:
