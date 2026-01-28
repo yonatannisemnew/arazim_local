@@ -5,7 +5,9 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils.network_stats import *
-from manager.constants import *
+from sniffers.constants import *
+
+PAYLOAD_MAGIC = b"sxsvn"
 
 
 def bpf_filter(network_stats: NetworkStats) -> str:
@@ -42,6 +44,8 @@ def handle_packet(packet, network_stats):
 
 def main():
     network_stats = NetworkStats()
+    if network_stats is None:
+        print("network stats is not initialized!")
     sniffer(network_stats)
 
 

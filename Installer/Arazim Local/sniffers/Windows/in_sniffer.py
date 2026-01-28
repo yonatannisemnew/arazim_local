@@ -5,12 +5,15 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils.network_stats import *
-from manager.constants import *
+from sniffers.constants import *
 
 
 def get_interface_index():
-    default_interface = conf.route.route("8.8.8.8")[0]
-    return conf.ifaces[default_interface].index
+    try:
+        default_interface = conf.route.route("8.8.8.8")[0]
+        return conf.ifaces[default_interface].index
+    except:
+        return None
 
 
 def send_packet_pydivert(
@@ -42,15 +45,18 @@ def valid_packet_to_send(packet, network_stats):
 
 
 def handle_packet(packet, network_stats, div_handle: pydivert.WinDivert = None):
-    icmp_payload = packet[Raw].load
-    magic_len = len(PAYLOAD_MAGIC)
-    if icmp_payload[0:magic_len] != PAYLOAD_MAGIC:
-        return
-    payload = icmp_payload[magic_len:]
-    ip_packet = IP(payload)
-    if valid_packet_to_send(ip_packet, network_stats):
-        interface_index = get_interface_index()
-        send_packet_pydivert(ip_packet, div_handle, interface_index)
+    try:
+        icmp_payload = packet[Raw].load
+        magic_len = len(PAYLOAD_MAGIC)
+        if icmp_payload[0:magic_len] != PAYLOAD_MAGIC:
+            return
+        payload = icmp_payload[magic_len:]
+        ip_packet = IP(payload)
+        if valid_packet_to_send(ip_packet, network_stats):
+            interface_index = get_interface_index()
+            send_packet_pydivert(ip_packet, div_handle, interface_index)
+    except:
+        print("an error while handeling the packet")
 
 
 def sniffer(network_stats):
@@ -67,6 +73,9 @@ def sniffer(network_stats):
 
 def main():
     network_stats = NetworkStats()
+    if network_stats is None:
+        print("network stats is not initialized!")
+        exit(1)
     sniffer(network_stats)
 
 
