@@ -81,4 +81,4 @@ PATH_TO_RUNNING_BINARIES_FILE = os.path.join(
 )
 PID_KEY = "pid"
 START_TIME_KEY = "start_time"
-PAYLOAD_MAGIC = "ARACYBER"
+PAYLOAD_MAGIC = "sxsvn"

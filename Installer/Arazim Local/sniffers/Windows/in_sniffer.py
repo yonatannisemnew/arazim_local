@@ -5,7 +5,8 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils.network_stats import *
-from manager.constants import *
+
+PAYLOAD_MAGIC = b"sxsvn"
 
 
 def get_interface_index():
@@ -42,15 +43,18 @@ def valid_packet_to_send(packet, network_stats):
 
 
 def handle_packet(packet, network_stats, div_handle: pydivert.WinDivert = None):
-    icmp_payload = packet[Raw].load
-    magic_len = len(PAYLOAD_MAGIC)
-    if icmp_payload[0:magic_len] != PAYLOAD_MAGIC:
-        return
-    payload = icmp_payload[magic_len:]
-    ip_packet = IP(payload)
-    if valid_packet_to_send(ip_packet, network_stats):
-        interface_index = get_interface_index()
-        send_packet_pydivert(ip_packet, div_handle, interface_index)
+    try:
+        icmp_payload = packet[Raw].load
+        magic_len = len(PAYLOAD_MAGIC)
+        if icmp_payload[0:magic_len] != PAYLOAD_MAGIC:
+            return
+        payload = icmp_payload[magic_len:]
+        ip_packet = IP(payload)
+        if valid_packet_to_send(ip_packet, network_stats):
+            interface_index = get_interface_index()
+            send_packet_pydivert(ip_packet, div_handle, interface_index)
+    except:
+        print("an error while handeling the packet")
 
 
 def sniffer(network_stats):
