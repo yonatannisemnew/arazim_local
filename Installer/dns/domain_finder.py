@@ -1,14 +1,12 @@
-from scapy.all import *
 import ipaddress
+import os
 from scapy.layers.inet import IP, ICMP
 from typing import Iterable
+from constants import *
 
-MY_IP = get_if_addr(conf.iface)
-DEFAULT_GATEWAY = conf.route.route("0.0.0.0")[2]
-QUERY_IDENTIFIER = b"nif_local_salta_8223"
-RESPONSE_IDENTIFIER = b"NOT_EZ_GIMEL_SHTAIM"
-
-from python_hosts import Hosts, HostsEntry
+# path setup
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+from utils.network_stats import NetworkStats
 
 def add_to_hosts_file(ip, hostname):
     hosts = Hosts()
@@ -19,10 +17,6 @@ def add_to_hosts_file(ip, hostname):
         print(f"[+] {hostname} pointed to {ip}")
     except PermissionError:
         print("[!] Run as sudo to modify hosts.")
-
-def xor(data, key):
-    return bytes([a ^ b for a, b in zip(data, key * (len(data) // len(key) + 1))])
-
 
 def get_subnet_ips(ip: str, mask: int) -> Iterable[str]:
     # Returns a generator yielding IPs as strings
@@ -38,35 +32,38 @@ def filter_packet(packet):
     return False
 
 
-def send_queries(src_ip: str, ips: Iterable):
+def send_queries(network_stats):
+    ips_to_query = [str(ip) for ip in network_stats.network.hosts()]
     icmp_core = ICMP() / Raw(QUERY_IDENTIFIER)
     packets = []
-    for ip in ips:
-        packet = IP(src=src_ip, dst=ip) / icmp_core
+
+    for dst_ip in ips_to_query:
+        packet = IP(src=network_stats.my_ip, dst=dst_ip) / icmp_core
         packets.append(packet)
     send(packets, verbose=False)
 
 
-def protocol(ip_iterable, timeout: float = 15):
+def find_server(network_stats, timeout: float = 15):
     sniffer = AsyncSniffer(
         iface=conf.iface, lfilter=filter_packet, count=1, timeout=timeout
     )
     sniffer.start()
 
-    send_queries(MY_IP, ip_iterable)
-    sniffer.join()  # Wait for responses to be captured
-    # 3. Stop sniffing when you're done
+    send_queries(network_stats)
+    sniffer.join()
     captured_packets = sniffer.results
     if len(captured_packets) == 0:
         return None
-    if len(captured_packets) == 1:
-        return captured_packets[0][IP].src
-    if len(captured_packets) > 1:
-        for packet in captured_packets:  # remove this debug print later
-            packet.summary()
-        return captured_packets[0][IP].src
+    return captured_packets[0][IP].src
 
 
-# if __name__ == "__main__":
-#     result = protocol("10.233.219.84", 24, 1)
-#     print(f"Discovered IP: {result}")
+if __name__ == "__main__":
+    network_stats = NetworkStats()
+    if network_stats is None:
+        exit(1)
+    try:
+        result = find_server(network_stats, 24)
+        print(f"Discovered IP: {result}")
+        add_to_hosts_file(result, DOMAIN)
+    except:
+        exit(1)
