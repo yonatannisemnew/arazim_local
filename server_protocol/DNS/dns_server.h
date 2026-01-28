@@ -7,7 +7,7 @@
 #define PAYLOAD "nif_local_salta_8223"
 
 #define RESPONSE_PAYLOAD "NOT_EZ_GIMEL_SHTAIM"
-#define INTERFACE "arch_wifi_interface"
+#define INTERFACE "lo"
 
 typedef unsigned char u_char;
 
