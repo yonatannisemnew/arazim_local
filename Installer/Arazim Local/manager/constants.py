@@ -78,7 +78,7 @@ ON_DISCONNECTION_SCRIPTS = [
 DNS_SCRIPTS = [
     [PYTHON_BINARY,
      os.path.join(
-            CURRENT_DIRECTORY, "..", "dns", "server_finder.py"
+            CURRENT_DIRECTORY, "..", "dns", "domain_finder.py"
         ),
     ]
 ]
