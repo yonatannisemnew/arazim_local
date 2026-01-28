@@ -14,15 +14,14 @@ def is_fragmented(pkt):
 def handle_fragmented(prn, pkt):
     global fragment_cache
     if is_fragmented(pkt):
-        if id not in fragment_cache.keys():
-            fragment_cache[id] = [pkt]
+        if pkt[IP].id not in fragment_cache.keys():
+            fragment_cache[pkt[IP].id] = [pkt]
         else:
-            fragment_cache[id].append(pkt)
-        reassembled = defragment(fragment_cache[id])
+            fragment_cache[pkt[IP].id].append(pkt)
+        reassembled = defragment(fragment_cache[pkt[IP].id])
         if len(reassembled) == 1 and not is_fragmented(reassembled[0]):
-            # added line
-            del fragment_cache[id]
-            prn(pkt)
+            del fragment_cache[pkt[IP].id]
+            prn(reassembled[0])
     else:
         prn(pkt)
 
