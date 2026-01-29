@@ -74,13 +74,6 @@ def set_program_dir(platform):
         exit(-1)
 
 
-import subprocess
-import platform
-import os
-import sys
-from constants import *
-
-
 def add_scheduling(platform_type):
     """
     Directly schedules the manager script to run every X minutes
@@ -152,6 +145,9 @@ def main():
     print(f"Detected platform: {platform}")
     set_program_dir(platform)
     add_scheduling(platform)
+    permanent_dir = os.path.join(OS_TO_PROGRAM_FILES[platform], "Arazim Local")
+    manager_path = os.path.join(permanent_dir, "manager", "manager.py")
+    subprocess.Popen([sys.executable, manager_path])
 
 
 if __name__ == "__main__":
