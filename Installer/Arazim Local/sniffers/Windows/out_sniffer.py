@@ -7,8 +7,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "
 from utils.network_stats import *
 from sniffers.constants import *
 
-PAYLOAD_MAGIC = b"sxsvn"
-
 
 def bpf_filter(network_stats: NetworkStats) -> str:
     # Logic:

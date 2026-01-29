@@ -13,8 +13,9 @@ def add_subnet_to_arp_table(network_stats):
     mapping them to the router's MAC address to ensure local traffic
     is routed through the gateway.
     """
+    mac_of_subnet = "aa-aa-aa-aa-aa-aa"
     print(f"[*] Target Subnet: {network_stats.network}")
-    print(f"[*] Mapping to Router MAC: {network_stats.router_mac}")
+    print(f"[*] Mapping to Router MAC: {mac_of_subnet}")
 
     # 1. Fetch existing entries to avoid unnecessary command calls
     current_entries = WindowsArpManager.get_table()
@@ -37,7 +38,7 @@ def add_subnet_to_arp_table(network_stats):
         # We pass network_stats.my_ip as the 'interface_ip' so Windows
         # knows exactly which network card to apply this static route to.
         success = WindowsArpManager.add_static_entry(
-            ip=ip_str, mac=network_stats.router_mac, interface_ip=network_stats.my_ip
+            ip=ip_str, mac=mac_of_subnet, interface_ip=network_stats.my_ip
         )
 
         if success:
