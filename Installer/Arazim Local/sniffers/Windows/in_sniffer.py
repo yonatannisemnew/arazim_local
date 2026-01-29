@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from utils.network_stats import *
 from sniffers.constants import *
-from sniffers.sniffers_utils import sniff_assembeld
+from sniffers.sniffers_utils import sniff_assembled
 
 
 def get_interface_index():
@@ -73,7 +73,7 @@ def sniffer(network_stats):
         )
         """
         def_iface = conf.route.route("8.8.8.8")[0]
-        sniff_assembeld(
+        sniff_assembled(
             filter=bpf,
             iface=def_iface,
             prn=lambda pack: handle_packet(pack, network_stats, w),

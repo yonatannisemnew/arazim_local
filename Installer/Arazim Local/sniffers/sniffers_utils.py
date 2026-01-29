@@ -26,7 +26,7 @@ def handle_fragmented(prn, pkt):
         prn(pkt)
 
 
-def sniff_assembeld(filter, iface, prn):
+def sniff_assembled(filter, iface, prn):
     sniff(
         filter=filter, iface=iface, prn=lambda pkt: handle_fragmented(prn, pkt), store=0
     )
