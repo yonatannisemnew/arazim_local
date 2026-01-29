@@ -149,6 +149,5 @@ def main():
     manager_path = os.path.join(permanent_dir, "manager", "manager.py")
     subprocess.Popen([sys.executable, manager_path])
 
-
 if __name__ == "__main__":
     main()
