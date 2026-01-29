@@ -6,6 +6,7 @@ from scapy.layers.inet import IP, TCP
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 from sniffers.constants import PAYLOAD_MAGIC
 from utils import network_stats
+from sniffers.sniffers_utils import sniff_assembled
 
 conf.L3socket = L3RawSocket
 
