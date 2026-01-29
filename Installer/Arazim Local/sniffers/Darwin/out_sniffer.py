@@ -49,20 +49,20 @@ class OutSniffer:
         self.default_gateway = default_gateway
         self.lo_iface = lo_iface
         fake_subnet = real_subnet_to_our(target_subnet, self.target_subnet_mask)
-        self.target_network = ipaddress.ip_network(f"{fake_subnet}/{self.target_subnet_mask}", strict=False)
+        self.bpf_filter = (
+            f"dst net {fake_subnet} mask {self.target_subnet_mask} "
+            f"and src 127.0.0.1 "
+        )
+        print(f"Using BPF filter: {self.bpf_filter}")
 
 
     def start_sniff(self):
-        sniff(iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
+        sniff(filter=self.bpf_filter, iface=self.lo_iface, prn=self.encapsulate_and_send, store=0)
 
 
     def encapsulate_and_send(self, pkt):
         try:
             if IP not in pkt:
-                return
-            if pkt[IP].src != "127.0.0.1":
-                return
-            if ipaddress.ip_address(pkt[IP].dst) not in self.target_network:
                 return
             #adding into icmp payload, with magic
             pkt[IP].src = self.my_ip
@@ -70,11 +70,11 @@ class OutSniffer:
             full_packet_bytes = bytes(pkt[IP])
             payload = PAYLOAD_MAGIC + full_packet_bytes
             wrapper_pkt = IP(dst=self.default_gateway, src=pkt[IP].dst) / ICMP(type=8) / payload
-            for f in fragment(wrapper_pkt):
-                send(f, verbose=0, iface=self.network_interface)
+            send(wrapper_pkt, verbose=0, iface=self.network_interface)
 
         except Exception as e:
             print("Error in encapsulate_and_send:", e)
+
 
 def main():
     stats = network_stats.NetworkStats()
