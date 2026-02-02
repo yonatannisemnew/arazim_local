@@ -41,7 +41,7 @@ def handle_packet(packet, network_stats):
 
 
 def main():
-    network_stats = NetworkStats()
+    network_stats = NetworkStats.get_stats()
     if network_stats is None:
         print("network stats is not initialized!")
     sniffer(network_stats)

@@ -6,27 +6,25 @@ import os
 import json
 from constants import *
 
-LAST_CONNECTION_TO_G2 = 0
+WAS_CONNECTED_TO_G2 = False
 sys.path.append(os.path.join(CURRENT_DIRECTORY, ".."))
 from utils import network_stats, premissions_stats
 
 
 def is_connection_new():
-    global LAST_CONNECTION_TO_G2
-    current_time = time.time()
-    if (current_time - LAST_CONNECTION_TO_G2) > (TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1):
-        LAST_CONNECTION_TO_G2 = current_time
+    global WAS_CONNECTED_TO_G2
+    if not WAS_CONNECTED_TO_G2:
+        WAS_CONNECTED_TO_G2 = True
         return True
-    LAST_CONNECTION_TO_G2 = current_time
     return False
 
 
 def is_disconnected_now_from_G2():
-    global LAST_CONNECTION_TO_G2
-    current_time = time.time()
-    return (current_time - LAST_CONNECTION_TO_G2) < (
-        TIME_INTERVAL_BETWEEN_CHECKS * 2 - 1
-    )
+    global WAS_CONNECTED_TO_G2
+    if WAS_CONNECTED_TO_G2:
+        WAS_CONNECTED_TO_G2 = False
+        return True
+    return False
 
 
 def is_process_running_by_pid(pid, start_time=""):
@@ -140,8 +138,8 @@ def main(
     processes = [None for _ in background_binaries_to_run]
     while True:
         try:
-            stats = network_stats.NetworkStats()
-            if stats.router_mac == G2_ROUTER_MAC:
+            stats = network_stats.NetworkStats.get_stats()
+            if stats is not None and stats.router_mac == G2_ROUTER_MAC:
                 # always running binaries
                 new_connection = is_connection_new()
                 if new_connection:
@@ -150,21 +148,23 @@ def main(
                     processes[i] = watchdog(binary_args, processes[i])
                 if new_connection:
                     run_binaries(dns_scripts)
-
             else:
                 # not in G2 logic
                 if is_disconnected_now_from_G2():
+                    # kill all running sniffers
+                    for i, process in enumerate(processes):
+                        processes[i] = kill_process(process)
+                    print("manager disconnecting")
+                    
                     run_binaries(on_disconnection_scripts)
-
-                # kill all running sniffers
-                for i, process in enumerate(processes):
-                    processes[i] = kill_process(process)
+                    print(on_disconnection_scripts)
             time.sleep(t)
         except KeyboardInterrupt:
             print(KEYBOARD_INTERRUPT_MESSAGE)
             for process in processes:
-                kill_process
+                kill_process(process)
             run_binaries(on_disconnection_scripts)
+            time.sleep(10)
             break
         except Exception as ex:
             print(f"An error occurred: {ex}")

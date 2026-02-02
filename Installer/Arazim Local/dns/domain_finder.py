@@ -75,7 +75,7 @@ def find_server(interface, ips_to_check, timeout: float = 15):
 
 
 def main():
-    network_stats = NetworkStats()
+    network_stats = NetworkStats.get_stats()
     if network_stats is None:
         print("error in netstats")
         exit(1)

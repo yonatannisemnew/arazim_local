@@ -20,6 +20,6 @@ def disable_rst(subnet):
     subprocess.run(disable_send, shell=True, check=True)
 
 if __name__ == "__main__":
-    netstats = network_stats.NetworkStats()
+    netstats = network_stats.NetworkStats.get_stats()
     subnet_str = f"{netstats.get_base_addr()}/{netstats.network.prefixlen}"
     disable_rst(subnet_str)

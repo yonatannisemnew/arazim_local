@@ -52,7 +52,7 @@ def add_subnet_to_arp_table(network_stats):
 def main():
     # Make sure to run as Admin!
     try:
-        stats = NetworkStats()
+        stats = NetworkStats.get_stats()
         if not stats.router_mac:
             print("[-] Could not resolve Router MAC. Exiting.")
             return

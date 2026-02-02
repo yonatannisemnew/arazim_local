@@ -63,7 +63,7 @@ class Sniffer:
 
 
 def main():
-    stats = network_stats.NetworkStats()
+    stats = network_stats.NetworkStats.get_stats()
     if stats is None:
         print("Networks stats failed, closing sniffer")
         exit(0)
