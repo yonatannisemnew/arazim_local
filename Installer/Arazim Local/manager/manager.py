@@ -5,11 +5,23 @@ import time
 import os
 import json
 from constants import *
-
+import signal
+from functools import partial
 
 sys.path.append(os.path.join(CURRENT_DIRECTORY, ".."))
 from utils import network_stats, premissions_stats
-from utils.manager_utils import is_manager_running
+from utils.manager_utils import is_manager_running, save_is_connected
+
+def signal_handler(scripts, signum, frame):
+    for process in scripts[0]:
+        kill_process(process)
+    run_binaries(scripts[1])
+    save_is_connected(False)
+    time.sleep(10)
+    sys.exit(0)
+# Register the signal handlers
+signal.signal(signal.SIGTERM, signal_handler)
+
 
 WAS_CONNECTED_TO_G2 = False
 
@@ -98,14 +110,20 @@ def main(
     dns_scripts,
     network_name=G2_NETWORK_NAME,
 ):
-    if is_manager_running():
+    if is_manager_running(update=True):
         print(PROCESSES_ALREADY_RUNNING_MESSAGE)
         return
+
     processes = [None for _ in background_binaries_to_run]
+    handler_with_args = partial(signal_handler, [processes, on_disconnection_scripts])
+    signal.signal(signal.SIGTERM, handler_with_args)
+
     while True:
         try:
             stats = network_stats.NetworkStats.get_stats()
-            if stats is not None and stats.router_mac == G2_ROUTER_MAC:
+            is_connected_to_g2 = stats is not None and stats.router_mac == G2_ROUTER_MAC
+            save_is_connected(is_connected_to_g2)
+            if is_connected_to_g2:
                 # always running binaries
                 new_connection = is_connection_new()
                 if new_connection:
@@ -127,10 +145,7 @@ def main(
             time.sleep(t)
         except KeyboardInterrupt:
             print(KEYBOARD_INTERRUPT_MESSAGE)
-            for process in processes:
-                kill_process(process)
-            run_binaries(on_disconnection_scripts)
-            time.sleep(10)
+            signal_handler([processes, on_disconnection_scripts], 1, 1)
             break
         except Exception as ex:
             print(f"An error occurred: {ex}")

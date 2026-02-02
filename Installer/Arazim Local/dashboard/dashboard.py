@@ -1,5 +1,9 @@
 import pygame
 import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from utils import manager_utils, network_stats
 
 # --- CONFIGURATION ---
 class Config:
@@ -15,19 +19,22 @@ class Config:
 # --- MODEL: The Business Logic ---
 class AppManager:
     def __init__(self):
-        self._state = "STOPPED" # Options: STOPPED, RUNNING, SLEEPING
         self._autorun = False
 
     def get_status(self):
-        return self._state
+        running = manager_utils.is_manager_running()
+        if not running:
+            return "STOPPED"
+        is_connected = manager_utils.load_is_connected()
+        return "RUNNING" if is_connected else "SLEEPING"
+        
 
     def open_manager(self):
         print("-> Action: Opening Manager")
         self._state = "RUNNING"
 
     def close_manager(self):
-        print("-> Action: Closing Manager")
-        self._state = "STOPPED"
+        manager_utils.kill_manager()
 
     def set_autorun(self, active):
         self._autorun = active
