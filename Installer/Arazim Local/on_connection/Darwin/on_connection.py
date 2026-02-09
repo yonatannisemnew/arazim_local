@@ -44,5 +44,5 @@ if __name__ == "__main__":
     netstats = network_stats.NetworkStats.get_stats()
     ips = [real_ip_to_local(str(ip)) for ip in netstats.network]
     add_subnet_to_loopback(ips)
-    subnet_str = f"{netstats.get_base_addr()}/{netstats.network.prefixlen}"
+    subnet_str = f"{real_ip_to_local(netstats.get_base_addr())}/{netstats.network.prefixlen}"
     disable_rst(subnet_str)
