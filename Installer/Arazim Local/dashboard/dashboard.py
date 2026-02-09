@@ -1,9 +1,19 @@
 import pygame
 import sys
 import os
+import subprocess
+import signal
+import platform
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from utils import manager_utils, network_stats
+PARENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+MANAGER_PATH = os.path.join(PARENT_DIR, "manager", "manager.py")
+sys.path.append(PARENT_DIR)
+from utils import manager_utils
+import dashboard_utils
+
+if sys.platform != "win32":
+    # Tell the OS to automatically reap dead children (Prevent Zombies)
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
 # --- CONFIGURATION ---
 class Config:
@@ -30,21 +40,33 @@ class AppManager:
         
 
     def open_manager(self):
-        print("-> Action: Opening Manager")
-        self._state = "RUNNING"
+        manager_dir = os.path.dirname(MANAGER_PATH)
+
+        if sys.platform == "win32":
+            kwargs = {'creationflags': subprocess.CREATE_NEW_CONSOLE}
+        else:
+            kwargs = {'start_new_session': True}
+
+        subprocess.Popen(
+            [sys.executable, MANAGER_PATH],
+            cwd=manager_dir,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL, # Mandatory if you have print() in manager
+            stderr=subprocess.DEVNULL,
+            **kwargs
+        )
 
     def close_manager(self):
         manager_utils.kill_manager()
 
     def set_autorun(self, active):
+        if platform.system() == "Darwin":
+            return
         self._autorun = active
         if active:
-            self._create_scheduling()
+            dashboard_utils.add_scheduling()
         else:
-            print("-> Action: Scheduling Disabled")
-
-    def _create_scheduling(self):
-        print("-> Action: Scheduling Started (Autorun ON)")
+            dashboard_utils.remove_scheduling()
 
 # --- VIEW: UI Components ---
 class Button:

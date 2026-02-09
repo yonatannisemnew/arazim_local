@@ -53,6 +53,7 @@ def kill_manager():
         p.terminate()
     except Exception as e:
         print("manager utils error", e)
+
 def save_is_connected(is_connected):
     with open(PATH_TO_IS_CONNECTED_FILE, "w") as f:
         f.write(str(is_connected))
@@ -61,3 +62,4 @@ def load_is_connected():
     with open(PATH_TO_IS_CONNECTED_FILE, "r") as f:
         return f.read(5) == "True"
     return False
+

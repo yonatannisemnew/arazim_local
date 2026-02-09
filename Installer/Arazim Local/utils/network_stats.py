@@ -3,7 +3,7 @@ import platform
 import psutil
 from scapy.all import *
 import ipaddress
-
+from scapy.layers.l2 import getmacbyip
 
 class NetworkStats:
     def __init__(self):
@@ -30,18 +30,7 @@ class NetworkStats:
         return str(self.network.network_address)
 
     def get_router_mac(self, router_ip):
-        # Create an Ethernet frame directed to the broadcast MAC (ff:ff:ff:ff:ff:ff)
-        eth = Ether(dst="ff:ff:ff:ff:ff:ff")
-        # Create an ARP request for the router's IP
-        arp = ARP(pdst=self.router_ip)
-
-        # Stack them and send/receive (srp)
-        ans, unans = srp(eth / arp, timeout=2, verbose=False)
-
-        for sent, received in ans:
-            return received.hwsrc  # This is the router's MAC
-
-        return None
+        return getmacbyip(router_ip)
 
     def get_my_mac(self, interface):
         addrs = psutil.net_if_addrs()

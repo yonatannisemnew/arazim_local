@@ -66,7 +66,7 @@ def sniffer(network_stats):
 
 
 def main():
-    network_stats = NetworkStats()
+    network_stats = NetworkStats.get_stats()
     sniffer(network_stats)
 
 

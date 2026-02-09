@@ -78,7 +78,7 @@ class NetworkStats:
 
 
 if __name__ == "__main__":
-    stats = NetworkStats()
+    stats = NetworkStats.get_stats()
     print(f"My IP: {stats.my_ip}")
     print(f"Router IP: {stats.router_ip}")
     print(f"Default Device: {stats.default_device}")
