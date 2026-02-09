@@ -1,6 +1,0 @@
-.env
-__pycache__/
-uploads/
-tasks/
-previews/
-token.json
