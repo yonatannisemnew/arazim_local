@@ -50,9 +50,6 @@ class AppManager:
         subprocess.Popen(
             [sys.executable, MANAGER_PATH],
             cwd=manager_dir,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL, # Mandatory if you have print() in manager
-            stderr=subprocess.DEVNULL,
             **kwargs
         )
 
@@ -60,8 +57,6 @@ class AppManager:
         manager_utils.kill_manager()
 
     def set_autorun(self, active):
-        if platform.system() == "Darwin":
-            return
         self._autorun = active
         if active:
             dashboard_utils.add_scheduling()
@@ -132,7 +127,7 @@ class DashboardApp:
         # Initialize Components
         self.manager = AppManager()
         self.btn_power = Button("POWER", 50, 100)
-        self.btn_autorun = Button("AUTORUN", 430, 100)
+        #self.btn_autorun = Button("AUTORUN", 430, 100)
         self.display = StatusDisplay(200, 100)
 
     def handle_input(self):
@@ -149,9 +144,9 @@ class DashboardApp:
                         self.manager.open_manager()
 
                 # 2. Autorun Logic: Toggle immediately
-                if self.btn_autorun.is_clicked(event.pos):
+                """if self.btn_autorun.is_clicked(event.pos):
                     self.btn_autorun.active = not self.btn_autorun.active
-                    self.manager.set_autorun(self.btn_autorun.active)
+                    self.manager.set_autorun(self.btn_autorun.active)"""
 
     def sync_state(self):
         """Checks Manager state and forces Buttons to match."""
@@ -167,7 +162,7 @@ class DashboardApp:
         self.screen.fill(Config.BG_COLOR)
         
         self.btn_power.draw(self.screen)
-        self.btn_autorun.draw(self.screen)
+        #self.btn_autorun.draw(self.screen)
         self.display.draw(self.screen, self.manager.get_status())
         
         pygame.display.flip()
