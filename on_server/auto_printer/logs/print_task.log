@@ -1,0 +1,28 @@
+[2026-02-08 17:41:37] Usage: print_task.py <task_file_path>
+[2026-02-08 17:42:32] Usage: print_task.py <task_file_path>
+[2026-02-08 17:48:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=one-sided /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/c7e00d3c-de4e-4c20-9a73-6752031a4348.pdf
+[2026-02-08 17:48:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/c7e00d3c-de4e-4c20-9a73-6752031a4348.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-08 18:01:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=two-sided-long-edge /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/e8fa7111-4f4d-4900-9953-b3f79cbe85e6.pdf
+[2026-02-08 18:01:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/e8fa7111-4f4d-4900-9953-b3f79cbe85e6.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-08 18:28:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=one-sided /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/90f37b4b-7c5b-4294-b09b-b83e026e6cd6.pdf
+[2026-02-08 18:28:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/90f37b4b-7c5b-4294-b09b-b83e026e6cd6.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-08 18:28:00] Deleted file: /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/tasks/13c9c3f2-c2c9-4570-a6ef-77ba5afc1ef7.json
+[2026-02-08 18:28:00] Deleted file: /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/90f37b4b-7c5b-4294-b09b-b83e026e6cd6.pdf
+[2026-02-08 18:31:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=one-sided /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/4628d028-5ad9-4b5a-baf7-5352c434d60b.pdf
+[2026-02-08 18:31:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/4628d028-5ad9-4b5a-baf7-5352c434d60b.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-08 18:31:00] Deleted file: /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/tasks/f519a0e9-5f83-4f2b-8d0e-35714c4649dd.json
+[2026-02-08 18:32:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=two-sided-long-edge /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/25cd26a0-eafb-48c4-81b2-b22f9b45fbf8.pdf
+[2026-02-08 18:32:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/25cd26a0-eafb-48c4-81b2-b22f9b45fbf8.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-08 18:32:00] Deleted file: /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/tasks/f9d13f9d-1375-4b41-b07e-224f0b061233.json
+[2026-02-08 18:36:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -o sides=one-sided /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/162d6668-bedd-4a55-a5a6-c37617460c4a.pdf
+[2026-02-08 18:36:00] Printed /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/162d6668-bedd-4a55-a5a6-c37617460c4a.pdf on HP_DeskJet_5200_series_FAD6D7
+[2026-02-09 16:43:00] Resetting printer: HP_DeskJet_5200_series_FAD6D7
+[2026-02-09 16:43:00] Printer re-enabled and queue cleared.
+[2026-02-09 16:43:00] Starting print job for: /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/b71514b9-f12b-4097-bf8c-c7bebdeb2821.pdf (2 copies)
+[2026-02-09 16:43:00] Resetting printer: HP_DeskJet_5200_series_FAD6D7
+[2026-02-09 16:43:00] Printer re-enabled and queue cleared.
+[2026-02-09 16:43:00] Running print command: lp -d HP_DeskJet_5200_series_FAD6D7 -n 2 -o print-color-mode=color -o sides=one-sided /home/arazim/Desktop/arazim_local/arazim_local/on_server/auto_printer/uploads/b71514b9-f12b-4097-bf8c-c7bebdeb2821.pdf
+[2026-02-09 16:43:00] Waiting 5s for spooler...
+[2026-02-09 16:43:05] Deleted: b71514b9-f12b-4097-bf8c-c7bebdeb2821.pdf
+[2026-02-09 16:43:05] Deleted: 66c3aee1-dfee-47cf-9886-497a7ddf76e2.json
+[2026-02-09 16:43:05] Print job and cleanup completed successfully.
