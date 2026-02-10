@@ -5,21 +5,19 @@ from scapy.all import *
 import ipaddress
 from scapy.layers.l2 import getmacbyip
 
+
 class NetworkStats:
     def __init__(self):
-        self.my_ip, self.router_ip, self.default_device = (
-            self._get_ips_and_def_device()
-        )
+        self.my_ip, self.router_ip, self.default_device = self._get_ips_and_def_device()
         self.subnet_mask = self._get_subnet_mask(self.router_ip)
         self.network = ipaddress.IPv4Network(
             f"{self.my_ip}/{self.subnet_mask}", strict=False
         )
-        self.my_mac = self.get_my_mac(self.default_device)
+        self.my_mac = self.get_my_mac(self.my_ip)
         self.router_mac = self.get_router_mac(self.router_ip)
         self.loopback_device = self.get_loopback_device()
         # check everything is initialized and not None
         if any(value is None for value in self.__dict__.values()):
-            print(self.__dict__)
             raise ValueError("One or more network attributes failed to initialize.")
 
     def in_subnet(self, ip_addr):
@@ -32,13 +30,8 @@ class NetworkStats:
     def get_router_mac(self, router_ip):
         return getmacbyip(router_ip)
 
-    def get_my_mac(self, interface):
-        addrs = psutil.net_if_addrs()
-        if interface in addrs:
-            for addr in addrs[interface]:
-                if addr.family == psutil.AF_LINK:
-                    return addr.address
-        return None
+    def get_my_mac(self, my_ip):
+        return getmacbyip(my_ip)
 
     def _get_ips_and_def_device(self):
         res = conf.route.route("8.8.8.8")
@@ -48,8 +41,8 @@ class NetworkStats:
         router_ip = res[2]
 
         # Handle cases where Scapy returns an interface object instead of a string
-        iface_name = getattr(iface_obj, 'name', str(iface_obj))
-        
+        iface_name = getattr(iface_obj, "name", str(iface_obj))
+
         return my_ip, router_ip, iface_name
 
     def _get_subnet_mask(self, router_ip):
@@ -68,16 +61,18 @@ class NetworkStats:
 
     def get_loopback_device(self):
         for name, iface in conf.ifaces.items():
-        # 1. Check if it's named like a loopback (Mac/Linux/Unix)
+            # 1. Check if it's named like a loopback (Mac/Linux/Unix)
             if name.lower().startswith("lo") or "loopback" in name.lower():
                 return name
-            
+
             # 2. Check the IP (with a safety check for None)
-            if hasattr(iface, 'ip') and iface.ip and iface.ip.startswith("127."):
+            if hasattr(iface, "ip") and iface.ip and iface.ip.startswith("127."):
                 return name
-                
+
             # 3. Check for the 'LOOPBACK' flag (Internal Scapy/OS flag)
-            if hasattr(iface, 'flags') and iface.flags & 0x8: # 0x8 is usually the LOOPBACK flag
+            if (
+                hasattr(iface, "flags") and iface.flags & 0x8
+            ):  # 0x8 is usually the LOOPBACK flag
                 return name
 
         # Absolute fallback based on OS
@@ -87,9 +82,10 @@ class NetworkStats:
     def get_stats(cls):
         try:
             return cls()
-        except Exception as e:
-            print("error", e)
+        except Exception:
             return None
+
+
 if __name__ == "__main__":
     stats = NetworkStats.get_stats()
     print(f"My IP: {stats.my_ip}")

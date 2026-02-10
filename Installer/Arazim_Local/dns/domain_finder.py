@@ -11,6 +11,7 @@ from python_hosts import Hosts, HostsEntry
 # path setup
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from utils.network_stats import NetworkStats
+from sniffers.constants import PAYLOAD_MAGIC
 
 
 def add_to_hosts_file(ip, hostname):
@@ -25,10 +26,12 @@ def add_to_hosts_file(ip, hostname):
 
 
 def filter_packet(packet):
+    ##for windows version:
     if packet.haslayer(ICMP):
         if packet.haslayer(Raw):
             payload = packet[Raw].load
-            if payload.startswith(RESPONSE_IDENTIFIER):
+            if payload.startswith(PAYLOAD_MAGIC) and (RESPONSE_IDENTIFIER in payload):
+                print("DNS FINDER: got packet!")
                 return True
     return False
 
@@ -45,6 +48,7 @@ def send_queries(ips):
     if platform.system() != "Windows":
         ips = list(map(real_ip_to_local, ips))
     packets = [IP(dst=ip) / ICMP() / Raw(load=QUERY_IDENTIFIER) for ip in ips]
+    print("DNS: STARTS SENDING QUERIES")
     send(packets, verbose=False)
 
 
@@ -61,17 +65,29 @@ def save_cached_ip(ip):
 
 
 def find_server(interface, ips_to_check, timeout: float = 15):
-    sniffer = AsyncSniffer(
-        iface=interface, lfilter=filter_packet, count=1, timeout=timeout
-    )
-    sniffer.start()
+    try:
+        sniffer = AsyncSniffer(
+            iface=interface, lfilter=filter_packet, count=1, timeout=timeout
+        )
+        sniffer.start()
 
-    send_queries(ips_to_check)
-    sniffer.join()
-    captured_packets = sniffer.results
-    if len(captured_packets) == 0:
+        send_queries(ips_to_check)
+        sniffer.join()
+        captured_packets = sniffer.results
+        if len(captured_packets) == 0:
+            return None
+        captured_packet = captured_packets[0]
+        captured_packet_load = captured_packet[Raw].load
+        packet_paylod = IP(captured_packet_load[len(PAYLOAD_MAGIC) :])
+        ip = packet_paylod.src
+        if sys.platform.startswith("linux"):
+            ##to be sure with linux
+            parts = ip.split(".")
+            parts[0] = "127"
+            return ".".join(parts)
+        return ip
+    except:
         return None
-    return captured_packets[0][IP].src
 
 
 def main():
@@ -84,14 +100,15 @@ def main():
         result = None
         try:
             if cached_ip is not None:
-                result = find_server(network_stats.loopback_device, [cached_ip])
+                result = find_server(network_stats.default_device, [cached_ip])
         finally:
             if result is None:
                 result = find_server(
-                    network_stats.loopback_device, network_stats.network.hosts()
+                    network_stats.default_device, network_stats.network.hosts()
                 )
         if result is not None:
-            print(f"server is at: {result}")
+            print(f"DNS: server is at: {result}")
+            print(f"{result}*100")
             add_to_hosts_file(result, DOMAIN)
             save_cached_ip(result)
         else:

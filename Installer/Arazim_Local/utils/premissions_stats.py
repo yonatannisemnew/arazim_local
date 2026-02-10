@@ -13,10 +13,18 @@ def root_check():
     # 2. Perform the OS-specific check
     if this_os == "Windows":
         try:
-            # Check if the current process has Admin tokens
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
-        except:
+        except AttributeError:
             is_admin = False
+
+        if not is_admin:
+            print("Requesting administrative privileges...")
+            # Re-run the script with admin rights
+            # 'runas' is the magic word that triggers the UAC prompt
+            ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", sys.executable, " ".join(sys.argv), None, 1
+            )
+            sys.exit(0)  # Exit the current non-privileged process
     else:
         # For Linux/macOS
         try:

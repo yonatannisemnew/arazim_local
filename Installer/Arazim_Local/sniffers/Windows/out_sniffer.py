@@ -48,4 +48,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print("a" * 1000)
     main()
