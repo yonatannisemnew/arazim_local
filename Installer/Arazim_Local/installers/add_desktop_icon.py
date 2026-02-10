@@ -2,7 +2,6 @@ import os
 import sys
 from constants import *
 from installer_utils import get_platform
-import pwd
 
 def get_desktop_icon_path(platform=get_platform()):
     if platform == LINUX_OS:
@@ -77,6 +76,7 @@ def add_desktop_icon(platform, project_dir):
     dashboard_path = os.path.join(project_dir, DASHBOARD_RELATIVE_TO_BASE_DIR)
 
     if platform == LINUX_OS:
+        import pwd
         add_linux(dashboard_path)
     else:
         add_windows(dashboard_path)
