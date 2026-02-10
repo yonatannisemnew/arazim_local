@@ -18,6 +18,7 @@ class NetworkStats:
         self.loopback_device = self.get_loopback_device()
         # check everything is initialized and not None
         if any(value is None for value in self.__dict__.values()):
+            print(self.__dict__)
             raise ValueError("One or more network attributes failed to initialize.")
 
     def in_subnet(self, ip_addr):
@@ -31,7 +32,10 @@ class NetworkStats:
         return getmacbyip(router_ip)
 
     def get_my_mac(self, my_ip):
-        return getmacbyip(my_ip)
+        iface = conf.ifaces.get(self.default_device)
+        if iface:
+            return iface.mac
+        return None
 
     def _get_ips_and_def_device(self):
         res = conf.route.route("8.8.8.8")
@@ -82,7 +86,8 @@ class NetworkStats:
     def get_stats(cls):
         try:
             return cls()
-        except Exception:
+        except Exception as e:
+            print(e)
             return None
 
 
