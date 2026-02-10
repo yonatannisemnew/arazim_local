@@ -2,7 +2,9 @@ import shutil
 import time
 import os
 import sys
-PARENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.join(CUR_DIR, "..")
+sys.path.append(CUR_DIR)
 sys.path.append(os.path.join(PARENT_DIR, "utils"))
 from manager_utils import kill_manager, is_manager_running
 from add_desktop_icon import get_desktop_icon_path

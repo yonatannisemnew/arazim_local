@@ -7,7 +7,7 @@ import ctypes
 from constants import *
 from add_desktop_icon import add_desktop_icon
 from dep_checker import has_dependencies
-from utils import get_platform
+from installer_utils import get_platform
 
 def is_admin():
     try:

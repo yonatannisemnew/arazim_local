@@ -1,7 +1,7 @@
 import os
 import sys
 from constants import *
-from utils import get_platform
+from installer_utils import get_platform
 import pwd
 
 def get_desktop_icon_path(platform=get_platform()):
