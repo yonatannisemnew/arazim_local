@@ -7,6 +7,7 @@ import ctypes
 from constants import *
 from add_desktop_icon import add_desktop_icon
 from dep_checker import has_dependencies
+from utils import get_platform
 
 def is_admin():
     try:
@@ -36,27 +37,13 @@ def run_as_admin():
     sys.exit()
 
 
-def get_platform():
-    os_name = platform.system()
-    is_64bit = sys.maxsize > 2**32
-
-    if os_name == "Windows":
-        return WINDOWS_X64 if is_64bit else WINDOWS_X86
-    elif os_name == "Darwin":
-        return MAC_OS
-    elif os_name == "Linux":
-        return LINUX_OS
-    else:
-        return UNKNOWN_OS
-
-
 def set_program_dir(platform):
     if platform not in OS_TO_PROGRAM_FILES:
         print("not supported platform")
         exit(1)
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    arazim_local_dir = os.path.join(current_dir, "Arazim_Local")
+    arazim_local_dir = os.path.join(current_dir, "..")
 
     # --- THIS IS THE CRITICAL CHANGE ---
     # We take "C:\Program Files" and turn it into "C:\Program Files\Arazim_Local"

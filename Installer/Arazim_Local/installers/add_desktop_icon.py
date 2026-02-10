@@ -1,11 +1,26 @@
 import os
 import sys
 from constants import *
+from utils import get_platform
+import pwd
 
+def get_desktop_icon_path(platform=get_platform()):
+    if platform == LINUX_OS:
+        real_user = os.environ.get("SUDO_USER")
+        if not real_user:
+            raise RuntimeError("This script must be run with sudo")
 
+        user_info = pwd.getpwnam(real_user)
+        home_dir = user_info.pw_dir
+
+        desktop_dir = os.path.join(home_dir, "Desktop")
+        return os.path.join(desktop_dir, "my_app.desktop")
+    elif platform in [WINDOWS_X64, WINDOWS_X86]:
+        home_dir = os.path.expanduser("~")
+        desktop_dir = os.path.join(home_dir, "Desktop")
+        return os.path.join(desktop_dir, "ARAZIM_LOCAL.bat")
+    
 def add_linux(dashboard_path):
-    import pwd
-
     real_user = os.environ.get("SUDO_USER")
     if not real_user:
         raise RuntimeError("This script must be run with sudo")
