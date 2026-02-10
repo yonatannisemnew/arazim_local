@@ -1,11 +1,12 @@
 import os
-import pwd
-from constants import LINUX_OS
+import sys
+from constants import *
 
-def add_linux():
-    # Who actually invoked sudo?
+
+def add_linux(dashboard_path):
+    import pwd
+
     real_user = os.environ.get("SUDO_USER")
-
     if not real_user:
         raise RuntimeError("This script must be run with sudo")
 
@@ -15,25 +16,52 @@ def add_linux():
     desktop_dir = os.path.join(home_dir, "Desktop")
     desktop_file = os.path.join(desktop_dir, "my_app.desktop")
 
-    desktop_content = """[Desktop Entry]
-    Type=Application
-    Name=My App
-    Exec=sudo nohup python3 "/usr/bin/Arazim_Local/dashboard/dashboard.py" >/dev/null 2>&1 & 
-    Terminal=true
-    """
+    python_name = sys.executable
+
+    desktop_content = f"""[Desktop Entry]
+Version=1.0
+Type=Application
+Name=My App
+Exec=sudo nohup "{python_name}" "{dashboard_path}" >/dev/null 2>&1 &
+Terminal=true
+Categories=Utility;
+"""
+
+    os.makedirs(desktop_dir, exist_ok=True)
 
     with open(desktop_file, "w") as f:
         f.write(desktop_content)
 
-    # Fix ownership + permissions
     os.chown(desktop_file, user_info.pw_uid, user_info.pw_gid)
     os.chmod(desktop_file, 0o755)
 
-def add_windows():
-    pass
 
-def add_desktop_icon(platform):
+def add_windows(dashboard_path):
+    home_dir = os.path.expanduser("~")
+    desktop_dir = os.path.join(home_dir, "Desktop")
+    bat_file = os.path.join(desktop_dir, "ARAZIM_LOCAL.bat")
+
+    python_name = sys.executable
+
+    bat_content = f"""@echo off
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+start "" "{python_name}" "{dashboard_path}"
+"""
+
+    os.makedirs(desktop_dir, exist_ok=True)
+    with open(bat_file, "w", encoding="utf-8") as f:
+        f.write(bat_content)
+
+
+def add_desktop_icon(platform, project_dir):
+    dashboard_path = os.path.join(project_dir, DASHBOARD_RELATIVE_TO_BASE_DIR)
+
     if platform == LINUX_OS:
-        add_linux()
+        add_linux(dashboard_path)
     else:
-        add_windows()
+        add_windows(dashboard_path)

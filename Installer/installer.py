@@ -7,6 +7,7 @@ import ctypes
 from constants import *
 from add_desktop_icon import add_desktop_icon
 
+
 def is_admin():
     try:
         # Check for Windows Admin
@@ -69,9 +70,11 @@ def set_program_dir(platform):
         # Now it will create the "Arazim Local" folder inside Program Files
         shutil.copytree(arazim_local_dir, target_dir, dirs_exist_ok=True)
         print("Copy Successful!")
+        return target_dir
     except Exception as e:
         print(f"unable to copy ARAZIM LOCAL dir!!! Error: {e}")
         exit(-1)
+
 
 def main():
     run_as_admin()
@@ -80,8 +83,9 @@ def main():
         print("Unsupported operating system.")
         exit(1)
     print(f"Detected platform: {platform}")
-    set_program_dir(platform)
-    add_desktop_icon(platform)
+    project_dir = set_program_dir(platform)
+    add_desktop_icon(platform, project_dir)
+
 
 if __name__ == "__main__":
     main()
