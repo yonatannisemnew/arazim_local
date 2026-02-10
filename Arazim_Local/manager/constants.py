@@ -31,6 +31,7 @@ PROCESSES_ALREADY_RUNNING_MESSAGE = "Required processes are already running. Exi
 KEYBOARD_INTERRUPT_MESSAGE = "Execution interrupted by user."
 
 PYTHON_BINARY = sys.executable
+
 # format: binary_path: [arg1, arg2, ...]
 
 """
@@ -55,6 +56,12 @@ BACKGROUND_BINARIES_TO_RUN = [
         PYTHON_BINARY,
         os.path.join(CURRENT_DIRECTORY, "..", "sniffers", THIS_OS, "out_sniffer.py"),
     ],
+    ###SERVER CHANGE 
+    [
+        "/bin/bash",
+        os.path.join(CURRENT_DIRECTORY, "..", "DNS_SERVER", "dns_server.sh"),
+    ],
+
 ]
 
 ON_CONNECTION_SCRIPTS = [

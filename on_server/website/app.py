@@ -5,7 +5,6 @@ import uuid
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
 from printer_scheduler import schedule_task
 from constants import * 
 

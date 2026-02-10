@@ -134,7 +134,9 @@ def main(
                 for i, binary_args in enumerate(background_binaries_to_run):
                     processes[i] = watchdog(binary_args, processes[i])
                 if new_connection:
-                    run_binaries(dns_scripts)
+                    ###ON SERVER CHANGE
+                    #run_binaries(dns_scripts)
+                    pass
             else:
                 # not in G2 logic
                 if is_disconnected_now_from_G2():
