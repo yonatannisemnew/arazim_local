@@ -6,7 +6,7 @@ import platform
 import ctypes
 from constants import *
 from add_desktop_icon import add_desktop_icon
-
+from dep_checker import has_dependencies
 
 def is_admin():
     try:
@@ -77,8 +77,10 @@ def set_program_dir(platform):
 
 
 def main():
-    run_as_admin()
     platform = get_platform()
+    if not has_dependencies(platform):
+        return
+    run_as_admin()
     if platform == UNKNOWN_OS:
         print("Unsupported operating system.")
         exit(1)
