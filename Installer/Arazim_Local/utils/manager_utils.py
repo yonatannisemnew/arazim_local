@@ -98,7 +98,7 @@ def kill_manager():
             parent.terminate()
 
             # 4. Wait for everything to die
-            gone, alive = psutil.wait_procs(children + [parent], timeout=3)
+            gone, alive = psutil.wait_procs(children + [parent], timeout=6)
 
             # 5. If anything is still alive, use the "nuclear" option
             for survivor in alive:
