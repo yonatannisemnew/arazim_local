@@ -13,7 +13,7 @@
 - ##### install python
 ```bash
 git clone git@github.com:yonatannisemnew/arazim_local.git
-cd arazim_local/Installer/Arazim_Local/installers
-(sudo) python installer.py
+cd arazim_local/Arazim_Local/installers
+python3 installer.py
 ```
 - ##### run shel shell script from the desktop
