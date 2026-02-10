@@ -57,6 +57,14 @@ BACKGROUND_BINARIES_TO_RUN = [
     ],
 ]
 
+if THIS_OS == WINDOWS:
+    BACKGROUND_BINARIES_TO_RUN.append(
+        [
+            PYTHON_BINARY,
+            os.path.join(CURRENT_DIRECTORY, "..", "sniffers", THIS_OS, "arp_server.py"),
+        ]
+    )
+
 ON_CONNECTION_SCRIPTS = [
     [
         PYTHON_BINARY,
