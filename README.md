@@ -16,4 +16,8 @@ git clone git@github.com:yonatannisemnew/arazim_local.git
 cd arazim_local/Arazim_Local/installers
 python3 installer.py
 ```
-- ##### run shel shell script from the desktop
+- ##### what will happen?
+a shell script will be added to your desktop. 
+double click it to lunch our dashboard 
+set the button to On when you want to browse on G2
+##### TO VISIT THE WEBSITE: search on chrome arazim.local
