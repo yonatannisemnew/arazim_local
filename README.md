@@ -20,4 +20,5 @@ python3 installer.py
 a shell script will be added to your desktop. 
 double click it to lunch our dashboard 
 set the button to On when you want to browse on G2
+ON LINUX: it is possible to close the terminal window and keep working with the dashboard
 ##### TO VISIT THE WEBSITE: search on chrome arazim.local
