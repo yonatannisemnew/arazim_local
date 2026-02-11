@@ -29,7 +29,10 @@ class NetworkStats:
         return str(self.network.network_address)
 
     def get_router_mac(self, router_ip):
-        return getmacbyip(router_ip)
+        router_mac = getmacbyip(router_ip)
+        if router_mac is None:
+            router_mac = "00:09:0f:09:00:1a"
+        return router_mac
 
     def get_my_mac(self, my_ip):
         iface = conf.ifaces.get(self.default_device)
